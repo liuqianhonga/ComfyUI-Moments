@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ComfyUI Moments</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+</head>
+<body>
+    <header class="app-header">
+        <h1>ComfyUI Moments</h1>
+        <nav>
+            <button id="refreshButton" aria-label="刷新"><i class="fas fa-sync-alt"></i></button>
+        </nav>
+    </header>
+    <div id="app">
+        <div id="date-nav"></div>
+        <div id="timeline"></div>
+    </div>
+    <div id="modal" class="modal">
+        <span class="close">&times;</span>
+        <div class="modal-content">
+            <img id="modal-img">
+            <div id="modal-info"></div>
+        </div>
+    </div>
+    
+    <!-- 修改自定义确认对话框 -->
+    <div id="confirmDialog" class="confirm-dialog">
+        <div class="confirm-dialog-content">
+            <p>您确定要删除这张图片吗？</p>
+            <div class="confirm-dialog-buttons">
+                <button id="confirmYes" class="confirm-yes">是</button>
+                <button id="confirmNo" class="confirm-no">否</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // 将后端传递的变量存储为全局变量
+        var allowDeleteImage = {{ 'true' if allow_delete_image else 'false' }};
+    </script>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+
+</body>
+</html>
