@@ -77,7 +77,7 @@ function renderImages() {
                 container.innerHTML = `
                     <div class="image-wrapper">
                         <div class="image-placeholder"></div>
-                        <img data-src="${image.path}" alt="Image" onclick="openModal(this)" style="display: none;">
+                        <img data-src="${image.path}" alt="Image" onclick="openModal('${image.path}')" style="display: none;">
                     </div>
                     <div class="image-info">
                         <span>${new Date(image.creation_time * 1000).toLocaleTimeString()}</span>
@@ -220,14 +220,14 @@ function updateActiveDate() {
 // 使用节流的滚动事件监听器
 window.addEventListener('scroll', throttle(handleScroll, 100));
 
-function openModal(img) {
+function openModal(imagePath) {
     const modal = document.getElementById('modal');
     const modalImg = document.getElementById('modal-img');
     const modalInfo = document.getElementById('modal-info');
     const modalContent = document.querySelector('.modal-content');
     
     modal.style.display = "block";
-    modalImg.src = img.src;
+    modalImg.src = imagePath;
     
     // 重置缩放和位置
     scale = 1;
@@ -243,20 +243,7 @@ function openModal(img) {
     modalInfo.innerHTML = translations.loading;
     
     // 获取图片元数据
-    fetch(`/api/image_info/${encodeURIComponent(img.src.split('/').pop())}`)
-        .then(response => response.json())
-        .then(data => {
-            // 格式化并显示工作流信息
-            let infoHtml = '<h3>工作流信息:</h3>';
-            for (let key in data) {
-                infoHtml += `<p><strong>${key}:</strong> ${JSON.stringify(data[key], null, 2)}</p>`;
-            }
-            modalInfo.innerHTML = infoHtml;
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            modalInfo.innerHTML = '无法加载图片信息';
-        });
+    getImageInfo(imagePath);
 
     // 添加点击事件监听器到模态框
     modal.onclick = function(event) {
@@ -538,4 +525,30 @@ function hideLoading() {
 function showError(message) {
     // 这里可以添加显示错误消息的代码
     alert(message);
+}
+
+function getImageInfo(imagePath) {
+    fetch(`/api/image_info/${encodeURIComponent(imagePath)}`)
+        .then(response => response.json())
+        .then(data => {
+            const modalInfo = document.getElementById('modal-info');
+            modalInfo.innerHTML = '';
+            
+            if (data.error) {
+                modalInfo.textContent = `错误: ${data.error}`;
+                return;
+            }
+
+            // 显示工作流信息
+            for (const [key, value] of Object.entries(data)) {
+                const p = document.createElement('p');
+                p.textContent = `${key}: ${JSON.stringify(value)}`;
+                modalInfo.appendChild(p);
+            }
+        })
+        .catch(error => {
+            console.error('获取图片信息时出错:', error);
+            const modalInfo = document.getElementById('modal-info');
+            modalInfo.textContent = '获取图片信息时出错';
+        });
 }
