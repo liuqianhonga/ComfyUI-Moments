@@ -60,13 +60,14 @@ python app.py
 4. 使用删除按钮可以将图片移动到系统回收站。
 
 ## 项目结构
-.
+```
 ├── app.py # Flask 应用主文件
 ├── config.ini # 配置文件
 ├── requirements.txt # Python 依赖列表
 ├── README.md # 项目说明文档
 └── templates
-└── index.html # 主页面模板
+    └── index.html # 主页面模板
+```
 
 ## 许可证
 
