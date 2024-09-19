@@ -2,14 +2,16 @@ import os
 import json
 from datetime import datetime
 from flask import Flask, render_template, jsonify, send_from_directory, request
+from flask_babel import Babel
 from collections import defaultdict, OrderedDict
 from urllib.parse import unquote
-from send2trash import send2trash  # 新增这行
+from send2trash import send2trash
 import re
 from PIL import Image
 import configparser
 
 app = Flask(__name__)
+babel = Babel(app)
 
 config = configparser.ConfigParser()
 config.read('config.ini')
@@ -35,19 +37,48 @@ def get_all_images():
                 date = datetime.fromtimestamp(image_info["creation_time"]).date()
                 images[date].append(image_info)
     
-    # 对每个日期内的图片按时间倒序排序
     for date in images:
         images[date] = sorted(images[date], key=lambda x: x["creation_time"], reverse=True)
     
-    # 对日期进行倒序排序
     sorted_images = OrderedDict(sorted(images.items(), key=lambda x: x[0], reverse=True))
     
-    # 将日期对象转换回字符串格式
     return OrderedDict((date.strftime("%Y-%m-%d"), imgs) for date, imgs in sorted_images.items())
+
+def get_locale():
+    return request.accept_languages.best_match(['en', 'zh'])
+
+# 将 get_locale 函数定义移到这里
+babel.init_app(app, locale_selector=get_locale)
+
+translations = {
+    'en': {
+        'delete_confirm': 'Are you sure you want to delete this image?',
+        'yes': 'Yes',
+        'no': 'No',
+        'refresh': 'Refresh',
+        'loading': 'Loading...',
+        'error_loading': 'Error loading images. Please try again later.',
+        'delete_error': 'Error deleting image',
+        'delete_disabled': 'Delete function is disabled'
+    },
+    'zh': {
+        'delete_confirm': '您确定要删除这张图片吗？',
+        'yes': '是',
+        'no': '否',
+        'refresh': '刷新',
+        'loading': '加载中...',
+        'error_loading': '加载图片时出错，请稍后再试。',
+        'delete_error': '删除图片失败',
+        'delete_disabled': '删除功能已被禁用'
+    }
+}
 
 @app.route('/')
 def index():
-    return render_template('index.html', allow_delete_image=ALLOW_DELETE_IMAGE)
+    locale = get_locale()
+    return render_template('index.html', 
+                           allow_delete_image=ALLOW_DELETE_IMAGE,
+                           translations=translations[locale])
 
 @app.route('/api/images')
 def get_images():
@@ -59,23 +90,18 @@ def serve_image(filename):
 
 @app.route('/api/image_info/<path:filename>')
 def get_image_metadata(filename):
-    # 解码文件名
     filename = unquote(filename)
     file_path = os.path.join(IMAGES_DIR, filename)
     
-    # 检查文件是否存在
     if not os.path.exists(file_path):
         return jsonify({"error": f"File not found: {file_path}"})
-
 
     try:
         with Image.open(file_path) as img:
             metadata = img.info
             
         if 'prompt' in metadata:
-            # ComfyUI 通常将元数据存储在 'parameters' 字段中
             params = metadata['prompt']
-            # 使用正则表达式提取 JSON 部分
             match = re.search(r'{.*}', params)
             if match:
                 json_str = match.group(0)
@@ -84,14 +110,12 @@ def get_image_metadata(filename):
             else:
                 return jsonify({"prompt": params})
         else:
-            # 如果没有 'parameters' 字段，尝试读取整个文件内容
             with open(file_path, 'rb') as f:
                 content = f.read()
                 start = content.rfind(b'{')
                 end = content.rfind(b'}') + 1
                 if start != -1 and end != -1:
                     json_data = content[start:end].decode('utf-8', errors='ignore')
-                    # 使用正则表达式清理 JSON 字符串
                     json_data = re.sub(r'[\x00-\x1F\x7F-\x9F]', '', json_data)
                     workflow_info = json.loads(json_data)
                     return jsonify(workflow_info)

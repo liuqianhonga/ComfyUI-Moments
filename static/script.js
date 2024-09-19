@@ -13,7 +13,6 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function fetchImages() {
-    // 显示加载指示器
     showLoading();
 
     fetch('/api/images')
@@ -24,14 +23,12 @@ function fetchImages() {
             renderDateNav();
             renderImages();
             setupInfiniteScroll();
-            // 隐藏加载指示器
             hideLoading();
         })
         .catch(error => {
             console.error('Error fetching images:', error);
-            // 隐藏加载指示器并显示错误消息
             hideLoading();
-            showError('加载图片时出错，请稍后再试。');
+            showError(translations.error_loading);
         });
 }
 
@@ -191,7 +188,7 @@ function openModal(img) {
     setupImageDrag();
     
     // 清空之前的信息
-    modalInfo.innerHTML = '加载中...';
+    modalInfo.innerHTML = translations.loading;
     
     // 获取图片元数据
     fetch(`/api/image_info/${encodeURIComponent(img.src.split('/').pop())}`)
@@ -309,11 +306,11 @@ function ensureDateNavItemVisible(item) {
 // 添加确认删除函数
 function confirmDelete(imagePath) {
     if (!allowDeleteImage) {
-        console.warn('删除功能已被禁用');
+        console.warn(translations.delete_disabled);
         return;
     }
     showConfirmDialog(
-        '您确定要删除这张图片吗？',
+        translations.delete_confirm,
         () => deleteImage(imagePath)
     );
 }
@@ -367,12 +364,12 @@ function deleteImage(imagePath) {
                 }, 300);
             }
         } else {
-            alert('删除图片失败: ' + data.error);
+            alert(translations.delete_error + ': ' + data.error);
         }
     })
     .catch(error => {
         console.error('错误:', error);
-        alert('删除图片时发生错误');
+        alert(translations.delete_error);
     });
 }
 
@@ -383,6 +380,8 @@ function showConfirmDialog(message, onConfirm, onCancel) {
     const noButton = document.getElementById('confirmNo');
 
     content.textContent = message;
+    yesButton.textContent = translations.yes;
+    noButton.textContent = translations.no;
     dialog.style.display = 'flex';
 
     yesButton.onclick = () => {
@@ -519,7 +518,6 @@ function setupRefreshButton() {
 // 添加这些新函数
 function showLoading() {
     // 这里可以添加显示加载指示器的代码
-    // 例如，可以添加一个加载动画或者改变刷新按钮的文本
     document.getElementById('refreshButton').disabled = true;
     document.getElementById('refreshButton').querySelector('i').classList.add('fa-spin');
 }
