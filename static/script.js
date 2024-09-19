@@ -158,15 +158,67 @@ function scrollToDate(date) {
         return;
     }
 
-    const dateNav = document.getElementById('date-nav');
-    const dateNavHeight = dateNav.offsetHeight;
-    const elementPosition = element.getBoundingClientRect().top + window.pageYOffset - dateNavHeight;
+    const headerHeight = document.querySelector('.app-header').offsetHeight;
+    const elementPosition = element.getBoundingClientRect().top + window.pageYOffset - headerHeight;
 
     window.scrollTo({
         top: elementPosition,
         behavior: 'smooth'
     });
+
+    // 更新选中状态
+    updateActiveDateNav(date);
 }
+
+function updateActiveDateNav(activeDate) {
+    const dateNavItems = document.querySelectorAll('.date-nav-item');
+    dateNavItems.forEach(item => {
+        if (item.textContent === activeDate) {
+            item.classList.add('active');
+            ensureDateNavItemVisible(item);
+        } else {
+            item.classList.remove('active');
+        }
+    });
+}
+
+function ensureDateNavItemVisible(item) {
+    const container = document.getElementById('date-nav');
+    const containerRect = container.getBoundingClientRect();
+    const itemRect = item.getBoundingClientRect();
+
+    if (itemRect.top < containerRect.top) {
+        container.scrollTop += itemRect.top - containerRect.top;
+    } else if (itemRect.bottom > containerRect.bottom) {
+        container.scrollTop += itemRect.bottom - containerRect.bottom;
+    }
+}
+
+function handleScroll() {
+    lazyLoadImages();
+    updateActiveDate();
+}
+
+function updateActiveDate() {
+    const dateContainers = document.querySelectorAll('.date-container');
+    const headerHeight = document.querySelector('.app-header').offsetHeight;
+    
+    let activeDate = null;
+    for (let container of dateContainers) {
+        const rect = container.getBoundingClientRect();
+        if (rect.top <= headerHeight && rect.bottom > headerHeight) {
+            activeDate = container.id.replace('date-', '');
+            break;
+        }
+    }
+
+    if (activeDate) {
+        updateActiveDateNav(activeDate);
+    }
+}
+
+// 使用节流的滚动事件监听器
+window.addEventListener('scroll', throttle(handleScroll, 100));
 
 function openModal(img) {
     const modal = document.getElementById('modal');
@@ -260,48 +312,6 @@ document.querySelector('.close').onclick = function(event) {
     event.stopPropagation();  // 防止事件冒泡到模态框
     closeModal();
 };
-
-window.addEventListener('scroll', function() {
-    clearTimeout(scrollTimeout);
-    scrollTimeout = setTimeout(function() {
-        lazyLoadImages();
-        updateActiveDate();
-    }, 100);
-});
-
-function updateActiveDate() {
-    const dateContainers = document.querySelectorAll('.date-container');
-    const dateNavItems = document.querySelectorAll('.date-nav-item');
-    const dateNav = document.getElementById('date-nav');
-    const dateNavHeight = dateNav.offsetHeight;
-    
-    let activeIndex = -1;
-    dateContainers.forEach((container, index) => {
-        const rect = container.getBoundingClientRect();
-        const headerHeight = container.querySelector('h2').offsetHeight;
-        if (rect.top <= dateNavHeight && rect.top + headerHeight > dateNavHeight) {
-            activeIndex = index;
-        }
-    });
-
-    if (activeIndex !== -1) {
-        dateNavItems.forEach(item => item.classList.remove('active'));
-        dateNavItems[activeIndex].classList.add('active');
-        ensureDateNavItemVisible(dateNavItems[activeIndex]);
-    }
-}
-
-function ensureDateNavItemVisible(item) {
-    const container = document.getElementById('date-nav');
-    const itemRect = item.getBoundingClientRect();
-    const containerRect = container.getBoundingClientRect();
-
-    if (itemRect.bottom > containerRect.bottom) {
-        container.scrollTop += itemRect.bottom - containerRect.bottom;
-    } else if (itemRect.top < containerRect.top) {
-        container.scrollTop += itemRect.top - containerRect.top;
-    }
-}
 
 // 添加确认删除函数
 function confirmDelete(imagePath) {
@@ -414,9 +424,6 @@ function throttle(func, limit) {
         }
     }
 }
-
-// 使用节流的滚动事件监听器
-window.addEventListener('scroll', throttle(handleScroll, 100));
 
 // 添加图片缩放功能
 let scale = 1;
