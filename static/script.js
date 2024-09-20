@@ -725,17 +725,19 @@ function formatChineseDate(dateString) {
     return `${year}年${month}月${day}日`;
 }
 
-var backToTopButton = document.getElementById("backToTop");
+window.onload = function() {
+    var backToTopButton = document.getElementById("backToTop");
 
-window.onscroll = function() {
-    if (document.body.scrollTop > window.innerHeight || document.documentElement.scrollTop > window.innerHeight) {
-        backToTopButton.style.display = "block";
-    } else {
-        backToTopButton.style.display = "none";
-    }
-};
+    window.onscroll = function() {
+        if (document.body.scrollTop > window.innerHeight || document.documentElement.scrollTop > window.innerHeight) {
+            backToTopButton.style.display = "block";
+        } else {
+            backToTopButton.style.display = "none";
+        }
+    };
 
-backToTopButton.onclick = function() {
-    document.body.scrollTop = 0;
-    document.documentElement.scrollTop = 0;
+    backToTopButton.onclick = function() {
+        document.body.scrollTop = 0;
+        document.documentElement.scrollTop = 0;
+    };
 };

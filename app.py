@@ -128,7 +128,12 @@ translations = {
         'delete_error': 'Error deleting image',
         'delete_disabled': 'Delete function is disabled',
         'refresh_success': 'Refresh successful',
-        'no_new_images': 'No new images found'
+        'no_new_images': 'No new images found',
+        'back_to_top': 'Back to top',
+        'metadata_not_found': 'Metadata not found',
+        'json_decode_error': 'JSON decode error',
+        'cannot_read_metadata': 'Cannot read image metadata',
+        'file_not_found': 'File not found'
     },
     'zh': {
         'delete_confirm': '您确定要删除这张图片吗？',
@@ -140,7 +145,12 @@ translations = {
         'delete_error': '删除图片失败',
         'delete_disabled': '删除功能已被禁用',
         'refresh_success': '刷新成功',
-        'no_new_images': '没有发现新图片'
+        'no_new_images': '没有发现新图片',
+        'back_to_top': '回到顶部',
+        'metadata_not_found': '未找到元数据',
+        'json_decode_error': 'JSON 解码错误',
+        'cannot_read_metadata': '无法读取图片元数据',
+        'file_not_found': '文件未找到'
     }
 }
 
@@ -166,6 +176,7 @@ def serve_image(filename):
 
 @app.route('/api/image_info/<path:filename>')
 def get_image_metadata(filename):
+    locale = get_locale()
     filename = unquote(filename)
     relative_path = filename.replace('images/', '', 1).replace('/', os.sep)
     
@@ -196,19 +207,19 @@ def get_image_metadata(filename):
                             workflow_info = json.loads(json_data)
                             return jsonify(workflow_info)
                 
-                return jsonify({"error": "未找到元数据"})
+                return jsonify({"error": translations[locale]['metadata_not_found']})
             except json.JSONDecodeError as e:
-                return jsonify({"error": f"JSON 解码错误: {str(e)}", "raw_data": json_data})
+                return jsonify({"error": f"{translations[locale]['json_decode_error']}: {str(e)}", "raw_data": json_data})
             except Exception as e:
-                print(f"读取图片元数据时出错: {e}")
-                return jsonify({"error": f"无法读取图片元数据: {str(e)}"})
+                return jsonify({"error": f"{translations[locale]['cannot_read_metadata']}: {str(e)}"})
     
-    return jsonify({"error": f"文件未找到: {filename}"})
+    return jsonify({"error": f"{translations[locale]['file_not_found']}: {filename}"})
 
 @app.route('/api/delete_image', methods=['POST'])
 def delete_image():
+    locale = get_locale()
     if not ALLOW_DELETE_IMAGE:
-        return jsonify({"success": False, "error": "删除图片功能已被禁用"}), 403
+        return jsonify({"success": False, "error": translations[locale]['delete_disabled']}), 403
 
     data = request.json
     image_path = data.get('image_path')
@@ -239,7 +250,7 @@ def delete_image():
             except Exception as e:
                 return jsonify({"success": False, "error": str(e)}), 500
 
-    return jsonify({"success": False, "error": "图片未找到"}), 404
+    return jsonify({"success": False, "error": translations[locale]['file_not_found']}), 404
 
 @app.route('/api/refresh')
 def refresh_images():
