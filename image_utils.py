@@ -1,7 +1,9 @@
 import os
 from datetime import datetime
 from collections import defaultdict, OrderedDict
-from cache_utils import get_last_modified_times, set_last_modified_times, get_last_config_mtime, set_last_config_mtime
+from cache_utils import get_last_modified_times, set_last_modified_times, get_last_config_mtime, set_last_config_mtime, get_cache, set_cache, save_cache
+
+CONFIG_FILE = 'config.ini'  # 改回 'config.ini'
 
 def get_dir_last_modified_time(directory):
     try:
@@ -11,7 +13,7 @@ def get_dir_last_modified_time(directory):
     except ValueError:  # 目录为空
         return 0
 
-def check_for_changes(config_file, image_dirs):
+def check_for_changes(config_file, image_dirs):  # 恢复 config_file 参数
     last_modified_times = get_last_modified_times()
     last_config_mtime = get_last_config_mtime()
     
@@ -26,7 +28,7 @@ def check_for_changes(config_file, image_dirs):
             return True
     return False
 
-def update_last_modified_times(config_file, image_dirs):
+def update_last_modified_times(config_file, image_dirs):  # 恢复 config_file 参数
     last_modified_times = {}
     for dir in image_dirs:
         last_modified_times[dir] = get_dir_last_modified_time(dir)
@@ -45,10 +47,8 @@ def get_image_info(file_path, base_dirs):
     return None
 
 def get_all_images(image_dirs, scan_subdirectories, file_types, exclude_dirs):
-    from cache_utils import get_cache, set_cache, save_cache
-    
     image_cache = get_cache()
-    if image_cache is None or check_for_changes('config.ini', image_dirs):
+    if image_cache is None or check_for_changes(CONFIG_FILE, image_dirs):
         images = defaultdict(list)
         for base_dir in image_dirs:
             for root, dirs, files in os.walk(base_dir):
@@ -72,6 +72,6 @@ def get_all_images(image_dirs, scan_subdirectories, file_types, exclude_dirs):
         image_cache = OrderedDict((date.strftime("%Y-%m-%d"), imgs) for date, imgs in sorted_images.items())
         set_cache(image_cache)
         save_cache()
-        update_last_modified_times('config.ini', image_dirs)
+        update_last_modified_times(CONFIG_FILE, image_dirs)
     
     return image_cache

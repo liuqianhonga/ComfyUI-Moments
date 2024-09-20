@@ -1,0 +1,8 @@
+[settings]
+images_dirs = E:\AI\ComfyUI\output
+allow_delete_image = True
+
+[advanced]
+scan_subdirectories = True
+file_types = .png,.jpg,.jpeg,.gif,.webp
+exclude_dirs = thumbnails,temp

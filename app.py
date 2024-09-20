@@ -2,8 +2,8 @@ import os
 import json
 from datetime import datetime
 import pickle
-from flask import Flask, render_template, jsonify, send_from_directory, request
-from flask_babel import Babel
+from flask import Flask, render_template, jsonify, send_from_directory, request, redirect, url_for
+from flask_babel import Babel, gettext as _
 from collections import defaultdict, OrderedDict
 from urllib.parse import unquote
 from send2trash import send2trash
@@ -17,17 +17,20 @@ from image_utils import get_all_images, get_image_info, check_for_changes, updat
 app = Flask(__name__)
 babel = Babel(app)
 
-config = configparser.ConfigParser()
-config.read('config.ini')
+config_parser = configparser.ConfigParser()
+CONFIG_FILE = 'config.ini'
 
-# 修改这里以支持多个目录
-IMAGES_DIRS = [dir.strip() for dir in config.get('settings', 'IMAGES_DIRS').split(',')]
-ALLOW_DELETE_IMAGE = config.getboolean('settings', 'ALLOW_DELETE_IMAGE')
-
-# 添加新的配置项
-SCAN_SUBDIRECTORIES = config.getboolean('advanced', 'SCAN_SUBDIRECTORIES', fallback=True)
-FILE_TYPES = tuple(ext.strip().lower() for ext in config.get('advanced', 'FILE_TYPES', fallback='.png,.jpg,.jpeg,.gif,.webp').split(','))
-EXCLUDE_DIRS = set(dir.strip() for dir in config.get('advanced', 'EXCLUDE_DIRS', fallback='thumbnails,temp').split(','))
+def load_config():
+    global IMAGES_DIRS, ALLOW_DELETE_IMAGE, SCAN_SUBDIRECTORIES, FILE_TYPES, EXCLUDE_DIRS
+    if os.path.exists(CONFIG_FILE):
+        config_parser.read(CONFIG_FILE)
+        IMAGES_DIRS = [dir.strip() for dir in config_parser.get('settings', 'images_dirs', fallback='').split(',') if dir.strip()]
+        ALLOW_DELETE_IMAGE = config_parser.getboolean('settings', 'allow_delete_image', fallback=False)
+        SCAN_SUBDIRECTORIES = config_parser.getboolean('advanced', 'scan_subdirectories', fallback=True)
+        FILE_TYPES = tuple(ext.strip().lower() for ext in config_parser.get('advanced', 'file_types', fallback='.png,.jpg,.jpeg,.gif,.webp').split(','))
+        EXCLUDE_DIRS = set(dir.strip() for dir in config_parser.get('advanced', 'exclude_dirs', fallback='thumbnails,temp').split(','))
+        return True
+    return False
 
 def get_locale():
     return request.accept_languages.best_match(['en', 'zh'])
@@ -36,10 +39,35 @@ babel.init_app(app, locale_selector=get_locale)
 
 @app.route('/')
 def index():
+    if not load_config():
+        return redirect(url_for('install'))
     locale = get_locale()
     return render_template('index.html', 
                            allow_delete_image=ALLOW_DELETE_IMAGE,
                            translations=translations[locale])
+
+@app.route('/install', methods=['GET', 'POST'])
+def install():
+    if request.method == 'POST':
+        config_parser['settings'] = {
+            'images_dirs': request.form.get('imageDirs', ''),
+            'allow_delete_image': 'True' if request.form.get('allowDelete') == 'on' else 'False'
+        }
+        
+        config_parser['advanced'] = {
+            'scan_subdirectories': 'True' if request.form.get('scanSubdirs') == 'on' else 'False',
+            'file_types': request.form.get('fileTypes', '.png,.jpg,.jpeg,.gif,.webp'),
+            'exclude_dirs': request.form.get('excludeDirs', 'thumbnails,temp')
+        }
+        
+        with open(CONFIG_FILE, 'w') as configfile:
+            config_parser.write(configfile)
+        
+        load_config()
+        return jsonify({'success': True})
+    
+    locale = get_locale()
+    return render_template('install.html', translations=translations[locale])
 
 @app.route('/api/images')
 def get_images():
@@ -125,7 +153,7 @@ def delete_image():
                 save_cache()
                 
                 # 更新最后修改时间
-                update_last_modified_times('config.ini', IMAGES_DIRS)
+                update_last_modified_times(IMAGES_DIRS)
                 
                 return jsonify({"success": True})
             except Exception as e:
@@ -136,14 +164,14 @@ def delete_image():
 @app.route('/api/refresh')
 def refresh_images():
     global IMAGES_DIRS
-    config.read('config.ini')
-    IMAGES_DIRS = [dir.strip() for dir in config.get('settings', 'IMAGES_DIRS').split(',')]
+    config_parser.read(CONFIG_FILE)
+    IMAGES_DIRS = [dir.strip() for dir in config_parser.get('settings', 'images_dirs').split(',')]
     
     try:
         # 直接重建缓存，不检查变化
         set_cache(None)
         images = get_all_images(IMAGES_DIRS, SCAN_SUBDIRECTORIES, FILE_TYPES, EXCLUDE_DIRS)
-        update_last_modified_times('config.ini', IMAGES_DIRS)
+        update_last_modified_times(IMAGES_DIRS)
         return jsonify({"refreshed": True, "images": images})
     except Exception as e:
         app.logger.error(f"Error in refresh_images: {str(e)}")
@@ -151,5 +179,6 @@ def refresh_images():
 
 if __name__ == '__main__':
     load_cache()
-    update_last_modified_times('config.ini', IMAGES_DIRS)
+    if load_config():
+        update_last_modified_times(IMAGES_DIRS)
     app.run(debug=True)

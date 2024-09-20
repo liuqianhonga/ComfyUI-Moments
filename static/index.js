@@ -59,6 +59,10 @@ function fetchImages() {
 // 修改 renderImages 函数
 function renderImages() {
     const timeline = document.getElementById('timeline');
+    if (!timeline) {
+        console.error('Timeline element not found');
+        return;
+    }
     const fragment = document.createDocumentFragment();
 
     dateList.forEach(date => {
@@ -575,13 +579,19 @@ function removeToast(toast) {
 }
 
 function showLoading() {
-    document.getElementById('refreshButton').disabled = true;
-    document.getElementById('refreshButton').querySelector('i').classList.add('fa-spin');
+    const refreshButton = document.getElementById('refreshButton');
+    if (refreshButton) {
+        refreshButton.disabled = true;
+        refreshButton.querySelector('i').classList.add('fa-spin');
+    }
 }
 
 function hideLoading() {
-    document.getElementById('refreshButton').disabled = false;
-    document.getElementById('refreshButton').querySelector('i').classList.remove('fa-spin');
+    const refreshButton = document.getElementById('refreshButton');
+    if (refreshButton) {
+        refreshButton.disabled = false;
+        refreshButton.querySelector('i').classList.remove('fa-spin');
+    }
 }
 
 function showError(message) {
@@ -618,18 +628,22 @@ function setupCalendarButton() {
     const calendarButton = document.getElementById('calendarButton');
     const calendarContainer = document.getElementById('calendarContainer');
 
-    calendarButton.addEventListener('mouseover', () => {
-        calendarContainer.classList.add('show');
-        if (!flatpickrInstance) {
-            initializeFlatpickr();
-        } else {
-            updateCalendarDate();
-        }
-    });
+    if (calendarButton && calendarContainer) {
+        calendarButton.addEventListener('mouseover', () => {
+            calendarContainer.classList.add('show');
+            if (!flatpickrInstance) {
+                initializeFlatpickr();
+            } else {
+                updateCalendarDate();
+            }
+        });
 
-    calendarContainer.addEventListener('mouseleave', () => {
-        calendarContainer.classList.remove('show');
-    });
+        calendarContainer.addEventListener('mouseleave', () => {
+            calendarContainer.classList.remove('show');
+        });
+    } else {
+        console.warn('Calendar button or container not found');
+    }
 }
 
 function initializeFlatpickr() {

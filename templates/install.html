@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="{{ request.accept_languages.best_match(['en', 'zh']) }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ translations['install_title'] }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='install.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-2xl mb-6">{{ translations['install_header'] }}</h1>
+        <form method="POST" class="form" id="installForm">
+            <div class="form-group">
+                <label class="form-label" for="imageDir">
+                    {{ translations['image_directory'] }}
+                </label>
+                <div class="dir-input-group">
+                    <input class="form-input" type="text" id="imageDir" placeholder="{{ translations['enter_image_directory'] }}">
+                    <button type="button" id="addDirBtn" class="btn btn-secondary">{{ translations['add'] }}</button>
+                </div>
+                <div id="dirList" class="mt-2"></div>
+                <input type="hidden" id="imageDirs" name="imageDirs">
+            </div>
+            <div class="form-group">
+                <label class="form-checkbox">
+                    <input type="checkbox" id="allowDelete" name="allowDelete" checked>
+                    <span>{{ translations['allow_delete_image'] }}</span>
+                </label>
+            </div>
+            <div class="form-group">
+                <label class="form-checkbox">
+                    <input type="checkbox" id="scanSubdirs" name="scanSubdirs" checked>
+                    <span>{{ translations['scan_subdirectories'] }}</span>
+                </label>
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="fileTypes">
+                    {{ translations['file_types'] }}
+                </label>
+                <input class="form-input" id="fileTypes" name="fileTypes" type="text" value=".png,.jpg,.jpeg,.gif,.webp">
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="excludeDirs">
+                    {{ translations['exclude_directories'] }}
+                </label>
+                <input class="form-input" id="excludeDirs" name="excludeDirs" type="text" value="thumbnails,temp">
+            </div>
+            <div>
+                <button class="btn btn-primary" type="submit">
+                    {{ translations['complete_installation'] }}
+                </button>
+            </div>
+        </form>
+    </div>
+    <script>
+        /* eslint-disable */
+        var translations = {{ translations | tojson | safe }};
+        /* eslint-enable */
+        let dirs = [];
+
+        document.getElementById('addDirBtn').addEventListener('click', function() {
+            const dir = document.getElementById('imageDir').value.trim();
+            if (dir && !dirs.includes(dir)) {
+                dirs.push(dir);
+                updateDirList();
+                document.getElementById('imageDir').value = '';
+            }
+        });
+
+        function updateDirList() {
+            const dirList = document.getElementById('dirList');
+            dirList.innerHTML = dirs.map(dir => 
+                `<div class="dir-item">${dir} <button type="button" class="btn-remove" onclick="removeDir('${dir}')">${translations['delete']}</button></div>`
+            ).join('');
+            document.getElementById('imageDirs').value = dirs.join(',');
+        }
+
+        function removeDir(dir) {
+            dirs = dirs.filter(d => d !== dir);
+            updateDirList();
+        }
+
+        document.getElementById('installForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            var formData = new FormData(this);
+            fetch('/install', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.href = '/';
+                } else {
+                    alert(translations['config_save_failed']);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
