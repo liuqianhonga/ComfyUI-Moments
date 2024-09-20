@@ -724,3 +724,18 @@ function formatChineseDate(dateString) {
     const day = date.getDate();
     return `${year}年${month}月${day}日`;
 }
+
+var backToTopButton = document.getElementById("backToTop");
+
+window.onscroll = function() {
+    if (document.body.scrollTop > window.innerHeight || document.documentElement.scrollTop > window.innerHeight) {
+        backToTopButton.style.display = "block";
+    } else {
+        backToTopButton.style.display = "none";
+    }
+};
+
+backToTopButton.onclick = function() {
+    document.body.scrollTop = 0;
+    document.documentElement.scrollTop = 0;
+};
