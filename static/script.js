@@ -166,8 +166,8 @@ function loadImage(img) {
     console.log('Loading image:', img.dataset.src);
     img.onload = function() {
         console.log('Image loaded:', this.src);
-        this.style.zIndex = 2; // 将加载完成的图片置于 placeholder 之上
         this.previousElementSibling.style.display = 'none'; // 隐藏占位符
+        this.classList.add('loaded'); // 添加 'loaded' 类来触发 CSS 过渡
     }
     img.onerror = function() {
         console.error('Error loading image:', this.dataset.src);
