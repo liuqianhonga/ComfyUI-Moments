@@ -27,10 +27,15 @@ if (typeof translations === 'undefined') {
     };
 }
 
+// 在文件顶部添加这个全局变量
+let imageObserver;
+
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM content loaded, fetching images');
     fetchImages();
     setupRefreshButton();
     setupCalendarButton();
+    window.addEventListener('resize', debounce(setupLazyLoading, 200));
 });
 
 function fetchImages() {
@@ -53,6 +58,7 @@ function fetchImages() {
         });
 }
 
+// 修改 renderImages 函数
 function renderImages() {
     const timeline = document.getElementById('timeline');
     const fragment = document.createDocumentFragment();
@@ -86,7 +92,7 @@ function renderImages() {
                 container.innerHTML = `
                     <div class="image-wrapper">
                         <div class="image-placeholder"></div>
-                        <img data-src="${image.path}" alt="Image" onclick="openModal('${image.path}')" style="display: none;">
+                        <img data-src="${image.path}" alt="Image" onclick="openModal('${image.path}')" style="display: block; width: 100%; height: 100%; object-fit: cover;">
                     </div>
                     <div class="image-info">
                         <span>${new Date(image.creation_time * 1000).toLocaleTimeString()}</span>
@@ -108,52 +114,93 @@ function renderImages() {
 
     timeline.innerHTML = '';
     timeline.appendChild(fragment);
-    lazyLoadImages();
+    setupLazyLoading();
+    console.log('Images rendered, lazy loading setup');
 }
 
-function lazyLoadImages() {
-    const images = document.querySelectorAll('img[data-src]');
-    images.forEach(img => {
-        if (isInViewport(img)) {
-            img.onload = function() {
-                this.style.display = 'block';
-                this.previousElementSibling.style.display = 'none';
+// 新增 setupLazyLoading 函数
+function setupLazyLoading() {
+    console.log('Setting up lazy loading');
+    if (!('IntersectionObserver' in window)) {
+        console.log('IntersectionObserver not supported, loading all images');
+        document.querySelectorAll('img[data-src]').forEach(img => loadImage(img));
+        return;
+    }
+
+    if (imageObserver) {
+        console.log('Disconnecting existing observer');
+        imageObserver.disconnect();
+    }
+
+    imageObserver = new IntersectionObserver((entries, observer) => {
+        console.log('Intersection callback triggered');
+        entries.forEach(entry => {
+            console.log('Entry:', entry.target.dataset.src, 'Intersecting:', entry.isIntersecting);
+            if (entry.isIntersecting) {
+                console.log('Loading image:', entry.target.dataset.src);
+                loadImage(entry.target);
+                observer.unobserve(entry.target);
             }
-            img.src = img.dataset.src;
-            img.removeAttribute('data-src');
-        }
+        });
+    }, {
+        rootMargin: '0px',
+        threshold: 0.1
+    });
+
+    const images = document.querySelectorAll('img[data-src]');
+    console.log('Found', images.length, 'images to observe');
+    images.forEach(img => {
+        imageObserver.observe(img);
+    });
+
+    // 添加以下代码以确保所有图片都被正确观察
+    const initialVisibleImages = document.querySelectorAll('img[data-src]:not([style*="display: none"])');
+    console.log('Initial visible images:', initialVisibleImages.length);
+    initialVisibleImages.forEach(img => {
+        imageObserver.observe(img);
     });
 }
 
-function isInViewport(element) {
-    const rect = element.getBoundingClientRect();
-    return (
-        rect.top >= 0 &&
-        rect.left >= 0 &&
-        rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
-        rect.right <= (window.innerWidth || document.documentElement.clientWidth)
-    );
+// 新增 loadImage 函数
+function loadImage(img) {
+    console.log('Loading image:', img.dataset.src);
+    img.onload = function() {
+        console.log('Image loaded:', this.src);
+        this.previousElementSibling.style.display = 'none'; // 隐藏占位符
+    }
+    img.onerror = function() {
+        console.error('Error loading image:', this.dataset.src);
+    }
+    if (!img.src) {
+        img.src = img.dataset.src;
+        img.removeAttribute('data-src');
+    }
 }
 
+// 修改 setupInfiniteScroll 函数
 function setupInfiniteScroll() {
-    updateInfiniteScrollObserver();
-}
-
-function updateInfiniteScrollObserver() {
     const timeline = document.getElementById('timeline');
-    if (timeline.lastElementChild) {
-        if (window.infiniteScrollObserver) {
-            window.infiniteScrollObserver.disconnect();
-        }
-        window.infiniteScrollObserver = new IntersectionObserver((entries) => {
-            if (entries[0].isIntersecting && currentPage * ITEMS_PER_PAGE < dateList.length) {
+    const options = {
+        root: null,
+        rootMargin: '0px',
+        threshold: 0.1
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting && currentPage * ITEMS_PER_PAGE < dateList.length) {
                 currentPage++;
                 renderImages(currentPage * ITEMS_PER_PAGE);
             }
-        }, { threshold: 0.1 });
-        window.infiniteScrollObserver.observe(timeline.lastElementChild);
+        });
+    }, options);
+
+    if (timeline.lastElementChild) {
+        observer.observe(timeline.lastElementChild);
     }
 }
+
+// 删除原来的 lazyLoadImages 和 isInViewport 函数，因为我们不再需要它们
 
 function scrollToDate(date) {
     const element = document.getElementById(`date-${date}`);
@@ -361,7 +408,6 @@ function showConfirmDialog(message, onConfirm, onCancel) {
 
 // 添加这个新函数来处理滚动事件
 function handleScroll() {
-    lazyLoadImages();
     updateActiveDate();
 }
 
@@ -441,11 +487,6 @@ function drag(e) {
 function endDrag() {
     isDragging = false;
 }
-
-// 在文件末尾添加这段代码
-window.addEventListener('resize', debounce(function() {
-    renderImages();
-}, 250));
 
 // 添加一个防抖函数
 function debounce(func, wait) {
