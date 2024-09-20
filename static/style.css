@@ -19,7 +19,7 @@ body {
     right: 0;
     z-index: 1000;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    height: 60px; /* 增加高度以容纳日历按钮 */
+    height: 60px;
 }
 
 .app-header h1 {
@@ -51,15 +51,15 @@ body {
 
 #app {
     max-width: 1200px;
-    margin: 70px auto 0; /* 增加顶部边距，与标题栏高度保持一致 */
+    margin: 70px auto 0;
     padding: 20px;
 }
 
 #timeline {
     width: 100%;
-    max-width: 1920px; /* 或者您希望的最大宽度 */
+    max-width: 1920px;
     margin: 0 auto;
-    padding: 0 20px; /* 添加一些左右内边距 */
+    padding: 0 20px;
     box-sizing: border-box;
 }
 
@@ -68,7 +68,7 @@ body {
     background-color: white;
     border-radius: 10px;
     box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-    overflow: visible; /* 改为 visible，允许标题溢出 */
+    overflow: visible;
     width: 100%;
 }
 
@@ -81,7 +81,7 @@ body {
     font-weight: 600;
     color: #1c1e21;
     position: sticky;
-    top: 70px; /* 调整顶部位置，与标题栏高度保持一致 */
+    top: 70px;
     z-index: 10;
 }
 
@@ -90,7 +90,7 @@ body {
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     gap: 15px;
     padding: 20px;
-    justify-content: start; /* 改为 start，以确保左对齐 */
+    justify-content: start;
 }
 
 .image-container {
@@ -99,12 +99,12 @@ body {
     box-shadow: 0 1px 2px rgba(0,0,0,0.1);
     overflow: hidden;
     transition: all 0.3s ease;
-    aspect-ratio: 9 / 16; /* 保持9:16的宽高比 */
+    aspect-ratio: 9 / 16;
     display: flex;
     flex-direction: column;
-    max-width: 300px; /* 添加最大宽度限制 */
-    width: 100%; /* 确保填满网格单元格 */
-    margin: 0 auto; /* 在网格单元格内居中 */
+    max-width: 300px;
+    width: 100%;
+    margin: 0 auto;
 }
 
 .image-wrapper {
@@ -118,7 +118,7 @@ body {
     height: 100%;
     object-fit: cover;
     transition: transform 0.3s ease;
-    cursor: pointer; /* 添加这行，使鼠标变为手型 */
+    cursor: pointer;
 }
 
 .image-container:hover img {
@@ -155,7 +155,7 @@ body {
 }
 
 .delete-icon:hover svg {
-    stroke: #e53e3e; /* 鼠标悬停时变为红色 */
+    stroke: #e53e3e;
 }
 
 .modal {
@@ -166,7 +166,7 @@ body {
     top: 0;
     width: 100%;
     height: 100%;
-    overflow: hidden; /* 改为 hidden 以防止滚动 */
+    overflow: hidden;
     background-color: rgba(0,0,0,0.9);
 }
 
@@ -174,11 +174,11 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center; /* 添加这行以垂直居中内容 */
-    height: 100%; /* 设置高度为100%以填充整个模态框 */
-    width: 100%; /* 设置宽度为100% */
+    justify-content: center;
+    height: 100%;
+    width: 100%;
     box-sizing: border-box;
-    position: relative; /* 添加相对定位 */
+    position: relative;
 }
 
 #modal-img {
@@ -189,8 +189,8 @@ body {
     transform-origin: center center;
     user-select: none;
     -webkit-user-drag: none;
-    position: absolute; /* 使用绝对定位 */
-    z-index: 1001; /* 确保图片在最上层 */
+    position: absolute;
+    z-index: 1001;
 }
 
 #modal-info {
@@ -210,12 +210,12 @@ body {
     backdrop-filter: blur(5px);
     -webkit-backdrop-filter: blur(5px);
     z-index: 1000;
-    user-select: text; /* 允许文本选择 */
-    pointer-events: auto; /* 允许鼠标事件 */
+    user-select: text;
+    pointer-events: auto;
 }
 
 #modal-info * {
-    user-select: text; /* 确保所有子元素也可以选择 */
+    user-select: text;
 }
 
 .close {
@@ -227,7 +227,7 @@ body {
     font-weight: bold;
     cursor: pointer;
     transition: 0.3s;
-    z-index: 1002; /* 确保关闭按钮在最上层 */
+    z-index: 1002;
 }
 
 .close:hover,
@@ -237,7 +237,6 @@ body {
     cursor: pointer;
 }
 
-/* 添加滚动条样式 */
 #modal-info::-webkit-scrollbar {
     width: 8px;
 }
@@ -334,7 +333,7 @@ body {
     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
     z-index: 1000;
     padding: 10px;
-    width: 350px; /* 增加固定宽度 */
+    width: 300px;
 }
 
 .calendar-container.show {
@@ -352,7 +351,6 @@ body {
     padding: 0 !important;
 }
 
-/* 添加以下样式来确保 Flatpickr 日历正确显示 */
 .flatpickr-months {
     display: flex;
     width: 100%;
@@ -376,19 +374,20 @@ body {
 
 .dayContainer {
     width: 100%;
-    min-width: 100%;
+    min-width: 280px;
     max-width: 100%;
     padding: 5px;
+    justify-content: space-around;
 }
 
 .flatpickr-day {
     border-radius: 50%;
     max-width: none;
-    height: 40px; /* 增加高度 */
-    line-height: 40px; /* 调整行高 */
-    width: 40px; /* 确保宽度与高度一致 */
-    margin: 2px; /* 添加一些边距 */
-    position: relative; /* 为角标定位 */
+    height: 40px;
+    line-height: 40px;
+    width: 40px;
+    margin: 2px;
+    position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -454,27 +453,70 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 10px; /* 减小字体大小 */
-    z-index: 1; /* 确保角标在日期上方 */
+    font-size: 10px;
+    z-index: 1;
 }
 
 #calendarButton {
     margin-right: 10px;
 }
 
-/* 确保日期容器可以容纳更大的日期单元格 */
-.dayContainer {
-    min-width: 280px; /* 调整最小宽度 */
-    justify-content: space-around; /* 均匀分布日期 */
-}
-
-/* 调整月份导航按钮的位置 */
 .flatpickr-months .flatpickr-prev-month,
 .flatpickr-months .flatpickr-next-month {
     border-radius: 0;
     border: none;
     max-width: none;
     height: 35px;
+}
+
+.toast {
+    position: fixed;
+    top: 80px;
+    right: 20px;
+    z-index: 1100;
+    max-width: 350px;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.375rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    opacity: 0;
+    transform: translateY(-1rem);
+    transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+}
+
+.toast.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.toast-message {
+    flex-grow: 1;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+}
+
+.toast-close {
+    margin-left: 0.75rem;
+    cursor: pointer;
+    font-size: 1.25rem;
+    line-height: 1;
+}
+
+.toast.info {
+    background-color: #EBF8FF;
+    color: #2B6CB0;
+}
+
+.toast.success {
+    background-color: #F0FFF4;
+    color: #2F855A;
+}
+
+.toast.error {
+    background-color: #FFF5F5;
+    color: #C53030;
 }
 
 @media (min-width: 768px) {
@@ -512,7 +554,7 @@ body {
         flex-direction: column;
         align-items: flex-start;
         padding: 10px;
-        height: 80px; /* 在移动设备上增加高度 */
+        height: 80px;
     }
 
     .app-header nav {
@@ -520,20 +562,16 @@ body {
     }
 
     #app {
-        margin-top: 100px; /* 为更高的标题栏留出空间 */
+        margin-top: 100px;
     }
 
     .date-container h2 {
-        top: 100px; /* 为更高的标题栏留出空间 */
+        top: 100px;
     }
 
     #timeline {
         width: 100%;
-        margin-top: 100px; /* 为固定定位的日期导航留出空间 */
-    }
-
-    .date-container h2 {
-        top: 100px; /* 调整吸顶位置，为顶部的日期导航留出空间 */
+        margin-top: 100px;
     }
 
     .images-container {
