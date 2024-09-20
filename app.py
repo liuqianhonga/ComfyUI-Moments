@@ -11,6 +11,8 @@ import re
 from PIL import Image
 import configparser
 from translations import translations  # 导入translations
+from cache_utils import load_cache, save_cache, get_cache, set_cache
+from image_utils import get_all_images, get_image_info, check_for_changes, update_last_modified_times
 
 app = Flask(__name__)
 babel = Babel(app)
@@ -27,92 +29,6 @@ SCAN_SUBDIRECTORIES = config.getboolean('advanced', 'SCAN_SUBDIRECTORIES', fallb
 FILE_TYPES = tuple(ext.strip().lower() for ext in config.get('advanced', 'FILE_TYPES', fallback='.png,.jpg,.jpeg,.gif,.webp').split(','))
 EXCLUDE_DIRS = set(dir.strip() for dir in config.get('advanced', 'EXCLUDE_DIRS', fallback='thumbnails,temp').split(','))
 
-# 添加缓存相关的全局变量
-CACHE_FILE = 'image_cache.pkl'
-last_modified_times = {}
-image_cache = None
-last_config_mtime = 0
-
-def get_dir_last_modified_time(directory):
-    try:
-        return max(os.path.getmtime(os.path.join(root, file))
-                   for root, _, files in os.walk(directory)
-                   for file in files)
-    except ValueError:  # 目录为空
-        return 0
-
-def check_for_changes():
-    global last_modified_times, last_config_mtime
-    
-    # 检查 config.ini 是否有变化
-    current_config_mtime = os.path.getmtime('config.ini')
-    if current_config_mtime > last_config_mtime:
-        return True
-    
-    for dir in IMAGES_DIRS:
-        current_time = get_dir_last_modified_time(dir)
-        if dir not in last_modified_times or current_time > last_modified_times[dir]:
-            return True
-    return False
-
-def update_last_modified_times():
-    global last_modified_times, last_config_mtime
-    for dir in IMAGES_DIRS:
-        last_modified_times[dir] = get_dir_last_modified_time(dir)
-    last_config_mtime = os.path.getmtime('config.ini')
-
-def load_cache():
-    global image_cache
-    if os.path.exists(CACHE_FILE):
-        with open(CACHE_FILE, 'rb') as f:
-            image_cache = pickle.load(f)
-    else:
-        image_cache = None
-
-def save_cache():
-    with open(CACHE_FILE, 'wb') as f:
-        pickle.dump(image_cache, f)
-
-def get_image_info(file_path):
-    modification_time = os.path.getmtime(file_path)
-    for base_dir in IMAGES_DIRS:
-        if file_path.startswith(base_dir):
-            relative_path = os.path.relpath(file_path, base_dir)
-            return {
-                "path": f"/images/{relative_path.replace(os.sep, '/')}",
-                "creation_time": modification_time
-            }
-    return None
-
-def get_all_images():
-    global image_cache
-    if image_cache is None or check_for_changes():
-        images = defaultdict(list)
-        for base_dir in IMAGES_DIRS:
-            for root, dirs, files in os.walk(base_dir):
-                if not SCAN_SUBDIRECTORIES and root != base_dir:
-                    continue
-                if os.path.basename(root) in EXCLUDE_DIRS:
-                    continue
-                for file in files:
-                    if file.lower().endswith(FILE_TYPES):
-                        file_path = os.path.join(root, file)
-                        image_info = get_image_info(file_path)
-                        if image_info:
-                            date = datetime.fromtimestamp(image_info["creation_time"]).date()
-                            images[date].append(image_info)
-        
-        for date in images:
-            images[date] = sorted(images[date], key=lambda x: x["creation_time"], reverse=True)
-        
-        sorted_images = OrderedDict(sorted(images.items(), key=lambda x: x[0], reverse=True))
-        
-        image_cache = OrderedDict((date.strftime("%Y-%m-%d"), imgs) for date, imgs in sorted_images.items())
-        save_cache()
-        update_last_modified_times()
-    
-    return image_cache
-
 def get_locale():
     return request.accept_languages.best_match(['en', 'zh'])
 
@@ -127,7 +43,7 @@ def index():
 
 @app.route('/api/images')
 def get_images():
-    images = get_all_images()
+    images = get_all_images(IMAGES_DIRS, SCAN_SUBDIRECTORIES, FILE_TYPES, EXCLUDE_DIRS)
     return jsonify(images)
 
 @app.route('/images/<path:filename>')
@@ -197,7 +113,7 @@ def delete_image():
                 send2trash(full_path)
                 
                 # 从缓存中删除特定图片记录
-                global image_cache
+                image_cache = get_cache()
                 if image_cache is not None:
                     for date, images in image_cache.items():
                         image_cache[date] = [img for img in images if img['path'] != image_path]
@@ -205,10 +121,11 @@ def delete_image():
                             del image_cache[date]
                 
                 # 保存更新后的缓存
+                set_cache(image_cache)
                 save_cache()
                 
                 # 更新最后修改时间
-                update_last_modified_times()
+                update_last_modified_times('config.ini', IMAGES_DIRS)
                 
                 return jsonify({"success": True})
             except Exception as e:
@@ -218,15 +135,15 @@ def delete_image():
 
 @app.route('/api/refresh')
 def refresh_images():
-    global image_cache, IMAGES_DIRS
+    global IMAGES_DIRS
     config.read('config.ini')
     IMAGES_DIRS = [dir.strip() for dir in config.get('settings', 'IMAGES_DIRS').split(',')]
     
     try:
         # 直接重建缓存，不检查变化
-        image_cache = None
-        images = get_all_images()
-        update_last_modified_times()
+        set_cache(None)
+        images = get_all_images(IMAGES_DIRS, SCAN_SUBDIRECTORIES, FILE_TYPES, EXCLUDE_DIRS)
+        update_last_modified_times('config.ini', IMAGES_DIRS)
         return jsonify({"refreshed": True, "images": images})
     except Exception as e:
         app.logger.error(f"Error in refresh_images: {str(e)}")
@@ -234,5 +151,5 @@ def refresh_images():
 
 if __name__ == '__main__':
     load_cache()
-    update_last_modified_times()
+    update_last_modified_times('config.ini', IMAGES_DIRS)
     app.run(debug=True)
