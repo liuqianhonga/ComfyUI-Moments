@@ -170,22 +170,23 @@ body {
     transition: all 0.2s ease;
     width: 24px;
     height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .delete-icon:hover {
     opacity: 1;
 }
 
-.delete-icon svg {
-    width: 100%;
-    height: 100%;
-    fill: none;
-    stroke: #65676b;
-    transition: stroke 0.2s ease;
+.delete-icon i {
+    font-size: 18px;
+    color: #65676b;
+    transition: color 0.2s ease;
 }
 
-.delete-icon:hover svg {
-    stroke: #e53e3e;
+.delete-icon:hover i {
+    color: #e53e3e;
 }
 
 .modal {
