@@ -92,7 +92,7 @@ function renderImages() {
                 container.innerHTML = `
                     <div class="image-wrapper">
                         <div class="image-placeholder"></div>
-                        <img data-src="${image.path}" alt="Image" onclick="openModal('${image.path}')">
+                        <img data-src="${image.path}" alt="${image.path}" onclick="openModal('${image.path}')">
                     </div>
                     <div class="image-info">
                         <span>${new Date(image.creation_time * 1000).toLocaleTimeString()}</span>
