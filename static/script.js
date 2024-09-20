@@ -148,19 +148,22 @@ function scrollToDate(date) {
     }
 }
 
-function updateActiveDate() {
-    const dateContainers = document.querySelectorAll('.date-container');
-    const headerHeight = document.querySelector('.app-header').offsetHeight;
-    
-    for (let container of dateContainers) {
-        const rect = container.getBoundingClientRect();
-        if (rect.top <= headerHeight && rect.bottom > headerHeight) {
-            const date = container.id.replace('date-', '');
-            if (flatpickrInstance) {
-                flatpickrInstance.setDate(date, false);
+function updateActiveDate(dateStr) {
+    if (!dateStr) {
+        const dateContainers = document.querySelectorAll('.date-container');
+        const headerHeight = document.querySelector('.app-header').offsetHeight;
+        
+        for (let container of dateContainers) {
+            const rect = container.getBoundingClientRect();
+            if (rect.top <= headerHeight && rect.bottom > headerHeight) {
+                dateStr = container.id.replace('date-', '');
+                break;
             }
-            break;
         }
+    }
+
+    if (dateStr && flatpickrInstance) {
+        flatpickrInstance.setDate(dateStr, false);
     }
 }
 
@@ -503,19 +506,15 @@ function setupCalendarButton() {
     const calendarButton = document.getElementById('calendarButton');
     const calendarContainer = document.getElementById('calendarContainer');
 
-    calendarButton.addEventListener('click', (e) => {
-        e.stopPropagation();
-        calendarContainer.classList.toggle('show');
+    calendarButton.addEventListener('mouseover', () => {
+        calendarContainer.classList.add('show');
         if (!flatpickrInstance) {
             initializeFlatpickr();
         }
     });
 
-    // 点击日历容器外的地方关闭日历
-    document.addEventListener('click', (e) => {
-        if (!calendarContainer.contains(e.target) && e.target !== calendarButton) {
-            calendarContainer.classList.remove('show');
-        }
+    calendarContainer.addEventListener('mouseleave', () => {
+        calendarContainer.classList.remove('show');
     });
 }
 
@@ -544,8 +543,7 @@ function initializeFlatpickr() {
         inline: true,
         mode: "single",
         dateFormat: "Y-m-d",
-        defaultDate: Object.keys(allImages)[0],
-        enable: Object.keys(allImages),
+        defaultDate: "today",
         locale: Mandarin,  // 使用中文本地化配置
         onDayCreate: function(dObj, dStr, fp, dayElem) {
             const date = dayElem.dateObj;

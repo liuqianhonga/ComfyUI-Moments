@@ -32,7 +32,6 @@
         </div>
     </div>
     
-    <!-- 修改自定义确认对话框 -->
     <div id="confirmDialog" class="confirm-dialog">
         <div class="confirm-dialog-content">
             <p id="confirmMessage"></p>
@@ -45,11 +44,9 @@
     
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script>
-        // 将后端传递的变量存储为全局变量
         var allowDeleteImage = {{ 'true' if allow_delete_image else 'false' }};
         var translations = {{ translations | tojson | safe }};
     </script>
     <script src="{{ url_for('static', filename='script.js') }}"></script>
-
 </body>
 </html>
