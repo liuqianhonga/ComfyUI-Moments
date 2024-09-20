@@ -510,6 +510,8 @@ function setupCalendarButton() {
         calendarContainer.classList.add('show');
         if (!flatpickrInstance) {
             initializeFlatpickr();
+        } else {
+            updateCalendarDate();
         }
     });
 
@@ -543,7 +545,7 @@ function initializeFlatpickr() {
         inline: true,
         mode: "single",
         dateFormat: "Y-m-d",
-        defaultDate: "today",
+        defaultDate: getCurrentVisibleDate(),
         locale: Mandarin,  // 使用中文本地化配置
         onDayCreate: function(dObj, dStr, fp, dayElem) {
             const date = dayElem.dateObj;
@@ -559,13 +561,32 @@ function initializeFlatpickr() {
         onChange: function(selectedDates, dateStr, instance) {
             if (selectedDates.length > 0) {
                 scrollToDate(dateStr);
-                updateActiveDate(dateStr);
             }
         }
     });
 
     // 初始化时设置当前日期
-    updateActiveDate();
+    updateCalendarDate();
+}
+
+function getCurrentVisibleDate() {
+    const dateContainers = document.querySelectorAll('.date-container');
+    const headerHeight = document.querySelector('.app-header').offsetHeight;
+    
+    for (let container of dateContainers) {
+        const rect = container.getBoundingClientRect();
+        if (rect.top <= headerHeight && rect.bottom > headerHeight) {
+            return container.id.replace('date-', '');
+        }
+    }
+    return new Date(); // 如果没有找到可见的日期，返回今天的日期
+}
+
+function updateCalendarDate() {
+    const currentDate = getCurrentVisibleDate();
+    if (flatpickrInstance) {
+        flatpickrInstance.setDate(currentDate, false);
+    }
 }
 
 function formatDate(date) {
