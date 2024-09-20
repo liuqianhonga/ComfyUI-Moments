@@ -220,6 +220,21 @@ def delete_image():
         if os.path.exists(full_path):
             try:
                 send2trash(full_path)
+                
+                # 从缓存中删除特定图片记录
+                global image_cache
+                if image_cache is not None:
+                    for date, images in image_cache.items():
+                        image_cache[date] = [img for img in images if img['path'] != image_path]
+                        if not image_cache[date]:
+                            del image_cache[date]
+                
+                # 保存更新后的缓存
+                save_cache()
+                
+                # 更新最后修改时间
+                update_last_modified_times()
+                
                 return jsonify({"success": True})
             except Exception as e:
                 return jsonify({"success": False, "error": str(e)}), 500
@@ -233,12 +248,11 @@ def refresh_images():
     IMAGES_DIRS = [dir.strip() for dir in config.get('settings', 'IMAGES_DIRS').split(',')]
     
     try:
-        if check_for_changes():
-            image_cache = None
-            images = get_all_images()
-            update_last_modified_times()
-            return jsonify({"refreshed": True, "images": images})
-        return jsonify({"refreshed": False})
+        # 直接重建缓存，不检查变化
+        image_cache = None
+        images = get_all_images()
+        update_last_modified_times()
+        return jsonify({"refreshed": True, "images": images})
     except Exception as e:
         app.logger.error(f"Error in refresh_images: {str(e)}")
         return jsonify({"error": str(e)}), 500
