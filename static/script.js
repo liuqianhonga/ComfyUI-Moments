@@ -92,7 +92,7 @@ function renderImages() {
                 container.innerHTML = `
                     <div class="image-wrapper">
                         <div class="image-placeholder"></div>
-                        <img data-src="${image.path}" alt="Image" onclick="openModal('${image.path}')" style="display: block; width: 100%; height: 100%; object-fit: cover;">
+                        <img data-src="${image.path}" alt="Image" onclick="openModal('${image.path}')">
                     </div>
                     <div class="image-info">
                         <span>${new Date(image.creation_time * 1000).toLocaleTimeString()}</span>
@@ -101,7 +101,7 @@ function renderImages() {
                 `;
             } else {
                 // 添加空的占位符
-                container.innerHTML = `<div class="image-wrapper"></div>`;
+                container.innerHTML = `<div class="image-wrapper"><div class="image-placeholder"></div></div>`;
                 container.style.visibility = 'hidden'; // 隐藏占位符，但保留其空间
             }
             
@@ -166,6 +166,7 @@ function loadImage(img) {
     console.log('Loading image:', img.dataset.src);
     img.onload = function() {
         console.log('Image loaded:', this.src);
+        this.style.zIndex = 2; // 将加载完成的图片置于 placeholder 之上
         this.previousElementSibling.style.display = 'none'; // 隐藏占位符
     }
     img.onerror = function() {
