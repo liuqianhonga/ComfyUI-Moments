@@ -31,13 +31,21 @@ pip install -r requirements.txt
 ## 配置
 
 1. 打开 `config.ini` 文件。
-2. 在 `IMAGES_DIR` 设置中，指定您的 ComfyUI 输出目录路径：
-3. 设置 `ALLOW_DELETE_IMAGE` 为 `True` 或 `False` 来启用或禁用删除图片功能：
+2. 在 `IMAGES_DIRS` 设置中，指定您的 ComfyUI 输出目录路径，多个目录用英文逗号隔开
+3. 设置 `ALLOW_DELETE_IMAGE` 为 `True` 或 `False` 来启用或禁用删除图片功能
+4. `SCAN_SUBDIRECTORIES`：是否扫描子目录。为 `True` 或 `False` 来启用或禁用
+5. `FILE_TYPES`：指定要扫描的文件类型。如：.png, .jpg, .jpeg, .gif, .webp
+6. `EXCLUDE_DIRS`：指定要排除的目录名。如：thumbnails, temp
 
 ``` ini
 [settings]
-IMAGES_DIR = E:\ComfyUI\output
+IMAGES_DIRS = 目录1路径, 目录2路径, 目录3路径
 ALLOW_DELETE_IMAGE = True
+
+[advanced]
+SCAN_SUBDIRECTORIES = True
+FILE_TYPES = .png, .jpg, .jpeg, .gif, .webp
+EXCLUDE_DIRS = thumbnails, temp
 ```
 
 ## 运行应用

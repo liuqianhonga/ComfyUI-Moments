@@ -1,11 +1,31 @@
+// 全局变量声明
 let allImages = {};
 let dateList = [];
 let currentPage = 0;
 let scrollTimeout;
+let imageCountByDate = {};
+let flatpickrInstance;
+let scale = 1;
+let isDragging = false;
+let startX, startY, translateX = 0, translateY = 0;
+
+const ZOOM_SPEED = 0.1;
+const MAX_SCALE = 3;
+const MIN_SCALE = 0.5;
 
 const trashBinIcon = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 016.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
 </svg>`;
+
+// 检查 translations 对象
+if (typeof translations === 'undefined') {
+    console.error('Translations object is not defined');
+    translations = {
+        refresh_success: 'Refresh successful',
+        no_new_images: 'No new images found',
+        error_loading: 'Error loading images'
+    };
+}
 
 document.addEventListener('DOMContentLoaded', function() {
     fetchImages();
@@ -360,11 +380,6 @@ function throttle(func, limit) {
 }
 
 // 添加图片缩放功能
-let scale = 1;
-const ZOOM_SPEED = 0.1;
-const MAX_SCALE = 3;
-const MIN_SCALE = 0.5;
-
 function setupImageZoom() {
     const modalImg = document.getElementById('modal-img');
     modalImg.addEventListener('wheel', function(e) {
@@ -377,9 +392,6 @@ function setupImageZoom() {
         modalImg.style.transform = `scale(${scale}) translate(${translateX}px, ${translateY}px)`;
     });
 }
-
-let isDragging = false;
-let startX, startY, translateX = 0, translateY = 0;
 
 function setupImageDrag() {
     const modalImg = document.getElementById('modal-img');
@@ -448,29 +460,91 @@ function debounce(func, wait) {
     };
 }
 
-// 在文件开头添加这个函数
 function setupRefreshButton() {
     const refreshButton = document.getElementById('refreshButton');
+    if (!refreshButton) {
+        console.error('Refresh button not found');
+        return;
+    }
     refreshButton.addEventListener('click', function() {
-        fetchImages();
+        console.log('Refresh button clicked');
+        showLoading();
+        fetch('/api/refresh')
+            .then(response => response.json())
+            .then(data => {
+                if (data.refreshed) {
+                    allImages = data.images;
+                    renderImages();
+                    showToast(translations.refresh_success);
+                } else {
+                    showToast(translations.no_new_images);
+                }
+                hideLoading();
+            })
+            .catch(error => {
+                console.error('Error refreshing images:', error);
+                hideLoading();
+                showToast(translations.error_loading);
+            });
     });
 }
 
-// 添加这些新函数
+function showToast(message, type = 'info') {
+    console.log('Showing toast:', message);
+    const existingToast = document.querySelector('.toast');
+    if (existingToast) {
+        existingToast.remove();
+    }
+
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    
+    const messageSpan = document.createElement('span');
+    messageSpan.className = 'toast-message';
+    messageSpan.textContent = message;
+    
+    const closeButton = document.createElement('span');
+    closeButton.className = 'toast-close';
+    closeButton.innerHTML = '&times;';
+    closeButton.onclick = () => removeToast(toast);
+    
+    toast.appendChild(messageSpan);
+    toast.appendChild(closeButton);
+    
+    document.body.appendChild(toast);
+    
+    // 触发重排以应用过渡效果
+    toast.offsetHeight;
+    
+    // 显示 toast
+    setTimeout(() => {
+        toast.classList.add('show');
+    }, 10);
+
+    // 3秒后自动隐藏
+    setTimeout(() => {
+        removeToast(toast);
+    }, 3000);
+}
+
+function removeToast(toast) {
+    toast.classList.remove('show');
+    toast.addEventListener('transitionend', () => {
+        toast.remove();
+    }, { once: true });
+}
+
 function showLoading() {
-    // 这里可以添加显示加载指示器的代码
     document.getElementById('refreshButton').disabled = true;
     document.getElementById('refreshButton').querySelector('i').classList.add('fa-spin');
 }
 
 function hideLoading() {
-    // 这里可以添加隐藏加载指示器的代码
     document.getElementById('refreshButton').disabled = false;
     document.getElementById('refreshButton').querySelector('i').classList.remove('fa-spin');
 }
 
 function showError(message) {
-    // 这里可以添加显示错误消息的代码
     alert(message);
 }
 
@@ -500,8 +574,6 @@ function getImageInfo(imagePath) {
         });
 }
 
-let imageCountByDate = {};
-
 function setupCalendarButton() {
     const calendarButton = document.getElementById('calendarButton');
     const calendarContainer = document.getElementById('calendarContainer');
@@ -519,8 +591,6 @@ function setupCalendarButton() {
         calendarContainer.classList.remove('show');
     });
 }
-
-let flatpickrInstance;
 
 function initializeFlatpickr() {
     const calendarElem = document.getElementById('calendar');
