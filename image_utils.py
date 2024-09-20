@@ -28,12 +28,12 @@ def check_for_changes(config_file, image_dirs):  # 恢复 config_file 参数
             return True
     return False
 
-def update_last_modified_times(config_file, image_dirs):  # 恢复 config_file 参数
+def update_last_modified_times(image_dirs):
     last_modified_times = {}
     for dir in image_dirs:
         last_modified_times[dir] = get_dir_last_modified_time(dir)
     set_last_modified_times(last_modified_times)
-    set_last_config_mtime(os.path.getmtime(config_file))
+    set_last_config_mtime(os.path.getmtime(CONFIG_FILE))
 
 def get_image_info(file_path, base_dirs):
     modification_time = os.path.getmtime(file_path)
@@ -72,6 +72,6 @@ def get_all_images(image_dirs, scan_subdirectories, file_types, exclude_dirs):
         image_cache = OrderedDict((date.strftime("%Y-%m-%d"), imgs) for date, imgs in sorted_images.items())
         set_cache(image_cache)
         save_cache()
-        update_last_modified_times(CONFIG_FILE, image_dirs)
+        update_last_modified_times(image_dirs)
     
     return image_cache
