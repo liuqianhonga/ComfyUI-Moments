@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ComfyUI Moments</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
 </head>
@@ -11,11 +12,16 @@
     <header class="app-header">
         <h1>ComfyUI Moments</h1>
         <nav>
+            <div class="calendar-wrapper">
+                <button id="calendarButton" aria-label="Calendar"><i class="fas fa-calendar-alt"></i></button>
+                <div id="calendarContainer" class="calendar-container">
+                    <div id="calendar"></div>
+                </div>
+            </div>
             <button id="refreshButton" aria-label="{{ translations['refresh'] }}"><i class="fas fa-sync-alt"></i></button>
         </nav>
     </header>
     <div id="app">
-        <div id="date-nav"></div>
         <div id="timeline"></div>
     </div>
     <div id="modal" class="modal">
@@ -37,6 +43,7 @@
         </div>
     </div>
     
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script>
         // 将后端传递的变量存储为全局变量
         var allowDeleteImage = {{ 'true' if allow_delete_image else 'false' }};

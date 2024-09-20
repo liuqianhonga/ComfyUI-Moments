@@ -19,13 +19,18 @@ body {
     right: 0;
     z-index: 1000;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    height: 50px; /* 添加固定高度 */
+    height: 60px; /* 增加高度以容纳日历按钮 */
 }
 
 .app-header h1 {
     margin: 0;
     font-size: 24px;
     font-weight: 500;
+}
+
+.app-header nav {
+    display: flex;
+    align-items: center;
 }
 
 .app-header nav button {
@@ -50,43 +55,12 @@ body {
     padding: 20px;
 }
 
-#date-nav {
-    position: fixed;
-    top: 70px; /* 调整顶部位置，与标题栏高度保持一致 */
-    right: 20px;
-    background-color: rgba(255, 255, 255, 0.95);
-    padding: 15px;
-    border-radius: 10px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    z-index: 100;
-    display: flex;
-    flex-direction: column;
-    max-height: calc(100vh - 140px); /* 减小最大高度 */
-    overflow-y: auto;
-    margin-bottom: 20px; /* 添加底部边距 */
-}
-
-.date-nav-item {
-    margin-bottom: 10px;
-    padding: 8px 15px;
-    cursor: pointer;
-    background-color: #f0f2f5;
-    border-radius: 20px;
-    text-align: center;
-    transition: all 0.2s ease;
-}
-
-.date-nav-item:hover {
-    background-color: #e4e6eb;
-}
-
-.date-nav-item.active {
-    background-color: #1877f2;
-    color: white;
-}
-
 #timeline {
-    width: calc(100% - 150px);
+    width: 100%;
+    max-width: 1920px; /* 或者您希望的最大宽度 */
+    margin: 0 auto;
+    padding: 0 20px; /* 添加一些左右内边距 */
+    box-sizing: border-box;
 }
 
 .date-container {
@@ -117,45 +91,6 @@ body {
     gap: 15px;
     padding: 20px;
     justify-content: start; /* 改为 start，以确保左对齐 */
-}
-
-@media (min-width: 768px) {
-    .images-container {
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    }
-}
-
-@media (min-width: 1024px) {
-    .images-container {
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    }
-}
-
-@media (min-width: 1280px) {
-    .images-container {
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    }
-}
-
-@media (min-width: 1536px) {
-    .images-container {
-        grid-template-columns: repeat(5, minmax(200px, 1fr));
-    }
-}
-
-@media (min-width: 1920px) {
-    .images-container {
-        grid-template-columns: repeat(5, minmax(200px, 1fr));
-    }
-}
-
-/* 添加以下样式以确保内容居中 */
-#timeline {
-    width: 100%;
-    max-width: 1920px; /* 或者您希望的最大宽度 */
-    margin: 0 auto;
-    padding: 0 20px; /* 添加一些左右内边距 */
-    box-sizing: border-box;
 }
 
 .image-container {
@@ -384,6 +319,194 @@ body {
     background-color: #d8dadf;
 }
 
+.calendar-wrapper {
+    position: relative;
+    margin-right: 10px;
+}
+
+.calendar-container {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    z-index: 1000;
+    padding: 10px;
+    width: 350px; /* 增加固定宽度 */
+}
+
+.calendar-container.show {
+    display: block;
+}
+
+#calendar {
+    width: 100%;
+}
+
+.flatpickr-calendar {
+    box-shadow: none !important;
+    width: 100% !important;
+    max-width: none !important;
+    padding: 0 !important;
+}
+
+/* 添加以下样式来确保 Flatpickr 日历正确显示 */
+.flatpickr-months {
+    display: flex;
+    width: 100%;
+}
+
+.flatpickr-month {
+    background: transparent;
+}
+
+.flatpickr-current-month {
+    padding: 0;
+}
+
+.flatpickr-weekdays {
+    background: transparent;
+}
+
+.flatpickr-days {
+    width: 100%;
+}
+
+.dayContainer {
+    width: 100%;
+    min-width: 100%;
+    max-width: 100%;
+    padding: 5px;
+}
+
+.flatpickr-day {
+    border-radius: 50%;
+    max-width: none;
+    height: 40px; /* 增加高度 */
+    line-height: 40px; /* 调整行高 */
+    width: 40px; /* 确保宽度与高度一致 */
+    margin: 2px; /* 添加一些边距 */
+    position: relative; /* 为角标定位 */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.flatpickr-day.selected,
+.flatpickr-day.startRange,
+.flatpickr-day.endRange,
+.flatpickr-day.selected.inRange,
+.flatpickr-day.startRange.inRange,
+.flatpickr-day.endRange.inRange,
+.flatpickr-day.selected:focus,
+.flatpickr-day.startRange:focus,
+.flatpickr-day.endRange:focus,
+.flatpickr-day.selected:hover,
+.flatpickr-day.startRange:hover,
+.flatpickr-day.endRange:hover,
+.flatpickr-day.selected.prevMonthDay,
+.flatpickr-day.startRange.prevMonthDay,
+.flatpickr-day.endRange.prevMonthDay,
+.flatpickr-day.selected.nextMonthDay,
+.flatpickr-day.startRange.nextMonthDay,
+.flatpickr-day.endRange.nextMonthDay {
+    background: #e6e6e6;
+    border-color: #e6e6e6;
+    border-radius: 50%;
+    color: #393939;
+}
+
+.flatpickr-day.inRange {
+    background: #e6f2ff;
+    border-color: #e6f2ff;
+    box-shadow: none;
+    border-radius: 50%;
+}
+
+.flatpickr-day.today {
+    border-color: #e6f2ff;
+}
+
+.flatpickr-day.today:hover,
+.flatpickr-day.today:focus {
+    border-color: #e6f2ff;
+    background: #e6f2ff;
+    color: #1877f2;
+}
+
+.flatpickr-day.selected.today,
+.flatpickr-day.startRange.today,
+.flatpickr-day.endRange.today {
+    color: #393939;
+}
+
+.image-count-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background-color: #1877f2;
+    color: white;
+    border-radius: 40%;
+    width: 20px;
+    height: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px; /* 减小字体大小 */
+    z-index: 1; /* 确保角标在日期上方 */
+}
+
+#calendarButton {
+    margin-right: 10px;
+}
+
+/* 确保日期容器可以容纳更大的日期单元格 */
+.dayContainer {
+    min-width: 280px; /* 调整最小宽度 */
+    justify-content: space-around; /* 均匀分布日期 */
+}
+
+/* 调整月份导航按钮的位置 */
+.flatpickr-months .flatpickr-prev-month,
+.flatpickr-months .flatpickr-next-month {
+    border-radius: 0;
+    border: none;
+    max-width: none;
+    height: 35px;
+}
+
+@media (min-width: 768px) {
+    .images-container {
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    }
+}
+
+@media (min-width: 1024px) {
+    .images-container {
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    }
+}
+
+@media (min-width: 1280px) {
+    .images-container {
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    }
+}
+
+@media (min-width: 1536px) {
+    .images-container {
+        grid-template-columns: repeat(5, minmax(200px, 1fr));
+    }
+}
+
+@media (min-width: 1920px) {
+    .images-container {
+        grid-template-columns: repeat(5, minmax(200px, 1fr));
+    }
+}
+
 @media (max-width: 768px) {
     .app-header {
         flex-direction: column;
@@ -398,11 +521,6 @@ body {
 
     #app {
         margin-top: 100px; /* 为更高的标题栏留出空间 */
-    }
-
-    #date-nav {
-        top: 100px; /* 为更高的标题栏留出空间 */
-        max-height: calc(100vh - 170px); /* 调整最大高度 */
     }
 
     .date-container h2 {

@@ -10,6 +10,7 @@ const trashBinIcon = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBo
 document.addEventListener('DOMContentLoaded', function() {
     fetchImages();
     setupRefreshButton();
+    setupCalendarButton();
 });
 
 function fetchImages() {
@@ -19,8 +20,8 @@ function fetchImages() {
         .then(response => response.json())
         .then(imagesByDate => {
             allImages = imagesByDate;
+            updateImageCountByDate();
             dateList = Object.keys(allImages).sort().reverse();
-            renderDateNav();
             renderImages();
             setupInfiniteScroll();
             hideLoading();
@@ -32,18 +33,6 @@ function fetchImages() {
         });
 }
 
-function renderDateNav() {
-    const dateNav = document.getElementById('date-nav');
-    dateNav.innerHTML = '';
-    dateList.forEach(date => {
-        const dateNavItem = document.createElement('div');
-        dateNavItem.className = 'date-nav-item';
-        dateNavItem.textContent = date;
-        dateNavItem.onclick = () => scrollToDate(date);
-        dateNav.appendChild(dateNavItem);
-    });
-}
-
 function renderImages() {
     const timeline = document.getElementById('timeline');
     const fragment = document.createDocumentFragment();
@@ -53,7 +42,7 @@ function renderImages() {
         const dateContainer = document.createElement('div');
         dateContainer.className = 'date-container';
         dateContainer.id = `date-${date}`;
-        dateContainer.innerHTML = `<h2>${date}</h2>`;
+        dateContainer.innerHTML = `<h2>${formatChineseDate(date)}</h2>`;
         
         const imagesContainer = document.createElement('div');
         imagesContainer.className = 'images-container';
@@ -148,72 +137,30 @@ function updateInfiniteScrollObserver() {
 
 function scrollToDate(date) {
     const element = document.getElementById(`date-${date}`);
-    if (!element) {
-        const index = dateList.indexOf(date);
-        if (index !== -1) {
-            currentPage = Math.floor(index / ITEMS_PER_PAGE);
-            renderImages(currentPage * ITEMS_PER_PAGE);
-            setTimeout(() => scrollToDate(date), 100);
-        }
-        return;
+    if (element) {
+        const headerHeight = document.querySelector('.app-header').offsetHeight;
+        const elementPosition = element.getBoundingClientRect().top + window.pageYOffset - headerHeight;
+
+        window.scrollTo({
+            top: elementPosition,
+            behavior: 'smooth'
+        });
     }
-
-    const headerHeight = document.querySelector('.app-header').offsetHeight;
-    const elementPosition = element.getBoundingClientRect().top + window.pageYOffset - headerHeight;
-
-    window.scrollTo({
-        top: elementPosition,
-        behavior: 'smooth'
-    });
-
-    // 更新选中状态
-    updateActiveDateNav(date);
-}
-
-function updateActiveDateNav(activeDate) {
-    const dateNavItems = document.querySelectorAll('.date-nav-item');
-    dateNavItems.forEach(item => {
-        if (item.textContent === activeDate) {
-            item.classList.add('active');
-            ensureDateNavItemVisible(item);
-        } else {
-            item.classList.remove('active');
-        }
-    });
-}
-
-function ensureDateNavItemVisible(item) {
-    const container = document.getElementById('date-nav');
-    const containerRect = container.getBoundingClientRect();
-    const itemRect = item.getBoundingClientRect();
-
-    if (itemRect.top < containerRect.top) {
-        container.scrollTop += itemRect.top - containerRect.top;
-    } else if (itemRect.bottom > containerRect.bottom) {
-        container.scrollTop += itemRect.bottom - containerRect.bottom;
-    }
-}
-
-function handleScroll() {
-    lazyLoadImages();
-    updateActiveDate();
 }
 
 function updateActiveDate() {
     const dateContainers = document.querySelectorAll('.date-container');
     const headerHeight = document.querySelector('.app-header').offsetHeight;
     
-    let activeDate = null;
     for (let container of dateContainers) {
         const rect = container.getBoundingClientRect();
         if (rect.top <= headerHeight && rect.bottom > headerHeight) {
-            activeDate = container.id.replace('date-', '');
+            const date = container.id.replace('date-', '');
+            if (flatpickrInstance) {
+                flatpickrInstance.setDate(date, false);
+            }
             break;
         }
-    }
-
-    if (activeDate) {
-        updateActiveDateNav(activeDate);
     }
 }
 
@@ -245,15 +192,12 @@ function openModal(imagePath) {
     // 获取图片元数据
     getImageInfo(imagePath);
 
-    // 添加点击事件监听器到模态框
-    modal.onclick = function(event) {
-        if (event.target === modal) {
-            closeModal();
-        }
+    modalImg.onclick = function(event) {
+        event.stopPropagation();
     };
 
-    // 阻止点击模态框内容时关闭模态框
     modalContent.onclick = function(event) {
+        closeModal();
         event.stopPropagation();
     };
 
@@ -551,4 +495,102 @@ function getImageInfo(imagePath) {
             const modalInfo = document.getElementById('modal-info');
             modalInfo.textContent = '获取图片信息时出错';
         });
+}
+
+let imageCountByDate = {};
+
+function setupCalendarButton() {
+    const calendarButton = document.getElementById('calendarButton');
+    const calendarContainer = document.getElementById('calendarContainer');
+
+    calendarButton.addEventListener('click', (e) => {
+        e.stopPropagation();
+        calendarContainer.classList.toggle('show');
+        if (!flatpickrInstance) {
+            initializeFlatpickr();
+        }
+    });
+
+    // 点击日历容器外的地方关闭日历
+    document.addEventListener('click', (e) => {
+        if (!calendarContainer.contains(e.target) && e.target !== calendarButton) {
+            calendarContainer.classList.remove('show');
+        }
+    });
+}
+
+let flatpickrInstance;
+
+function initializeFlatpickr() {
+    const calendarElem = document.getElementById('calendar');
+    
+    // 添加中文本地化配置
+    const Mandarin = {
+        weekdays: {
+            shorthand: ["周日", "周一", "周二", "周三", "周四", "周五", "周六"],
+            longhand: ["星期日", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六"]
+        },
+        months: {
+            shorthand: ["一月", "二月", "三月", "四月", "五月", "六月", "七月", "八月", "九月", "十月", "十一月", "十二月"],
+            longhand: ["一月", "二月", "三月", "四月", "五月", "六月", "七月", "八月", "九月", "十月", "十一月", "十二月"]
+        },
+        rangeSeparator: " 至 ",
+        weekAbbreviation: "周",
+        scrollTitle: "滚动切换",
+        toggleTitle: "点击切换 12/24 小时时制"
+    };
+
+    flatpickrInstance = flatpickr(calendarElem, {
+        inline: true,
+        mode: "single",
+        dateFormat: "Y-m-d",
+        defaultDate: Object.keys(allImages)[0],
+        enable: Object.keys(allImages),
+        locale: Mandarin,  // 使用中文本地化配置
+        onDayCreate: function(dObj, dStr, fp, dayElem) {
+            const date = dayElem.dateObj;
+            const dateStr = formatDate(date);
+            if (allImages[dateStr]) {
+                const imageCount = allImages[dateStr].length;
+                const badge = document.createElement('span');
+                badge.className = 'image-count-badge';
+                badge.textContent = imageCount;
+                dayElem.appendChild(badge);
+            }
+        },
+        onChange: function(selectedDates, dateStr, instance) {
+            if (selectedDates.length > 0) {
+                scrollToDate(dateStr);
+                updateActiveDate(dateStr);
+            }
+        }
+    });
+
+    // 初始化时设置当前日期
+    updateActiveDate();
+}
+
+function formatDate(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
+
+function updateImageCountByDate() {
+    imageCountByDate = {};
+    for (const [dateStr, images] of Object.entries(allImages)) {
+        const [year, month, day] = dateStr.split('-');
+        if (!imageCountByDate[year]) imageCountByDate[year] = {};
+        if (!imageCountByDate[year][month]) imageCountByDate[year][month] = {};
+        imageCountByDate[year][month][day] = images.length;
+    }
+}
+
+function formatChineseDate(dateString) {
+    const date = new Date(dateString);
+    const year = date.getFullYear();
+    const month = date.getMonth() + 1;
+    const day = date.getDate();
+    return `${year}年${month}月${day}日`;
 }
