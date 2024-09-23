@@ -599,27 +599,33 @@ function showError(message) {
 }
 
 function getImageInfo(imagePath) {
-    fetch(`/api/image_info/${encodeURIComponent(imagePath)}`)
-        .then(response => response.json())
-        .then(data => {
-            const modalInfo = document.getElementById('modal-info');
-            modalInfo.innerHTML = '';
-            
-            if (data.error) {
-                modalInfo.textContent = `错误: ${data.error}`;
-                return;
-            }
+    fetch(`/api/image_info`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ filename: imagePath })
+    })
+    .then(response => response.json())
+    .then(data => {
+        const modalInfo = document.getElementById('modal-info');
+        modalInfo.innerHTML = '';
+        
+        if (data.error) {
+            modalInfo.textContent = `错误: ${data.error}`;
+            return;
+        }
 
-            // 显示完整的工作流信息
-            const pre = document.createElement('pre');
-            pre.textContent = JSON.stringify(data, null, 2);
-            modalInfo.appendChild(pre);
-        })
-        .catch(error => {
-            console.error('获取图片信息时出错:', error);
-            const modalInfo = document.getElementById('modal-info');
-            modalInfo.textContent = '获取图片信息时出错';
-        });
+        // 显示完整的工作流信息
+        const pre = document.createElement('pre');
+        pre.textContent = JSON.stringify(data, null, 2);
+        modalInfo.appendChild(pre);
+    })
+    .catch(error => {
+        console.error('获取图片信息时出错:', error);
+        const modalInfo = document.getElementById('modal-info');
+        modalInfo.textContent = '获取图片信息时出错';
+    });
 }
 
 function setupCalendarButton() {
@@ -753,46 +759,14 @@ window.onload = function() {
     };
 };
 
-function showImageDetails(filename) {
-    const modal = document.getElementById('modal');
-    const modalImg = document.getElementById('modal-img');
-    const modalInfo = document.getElementById('modal-info');
-    const copyWorkflowButton = document.getElementById('copyWorkflow');
-
-    modalImg.src = `/images/${filename}`;
-    modal.style.display = 'block';
-
-    // 清空之前的信息
-    modalInfo.innerHTML = '';
-
-    fetch(`/api/image_info/${encodeURIComponent(filename)}`)
-        .then(response => response.json())
-        .then(data => {
-            if (data.error) {
-                modalInfo.textContent = `${translations['error']}: ${data.error}`;
-                copyWorkflowButton.style.display = 'none';
-            } else {
-                // 格式化并显示所有信息，包括工作流
-                const formattedData = JSON.stringify(data, null, 2);
-                modalInfo.innerHTML = `<pre>${escapeHtml(formattedData)}</pre>`;
-                copyWorkflowButton.style.display = 'inline-block';
-                copyWorkflowButton.textContent = translations['copy_workflow'];
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            modalInfo.textContent = translations['error_fetching_info'];
-            copyWorkflowButton.style.display = 'none';
-        });
-}
-
+// 辅助函数用于转义 HTML 特殊字符
 function escapeHtml(unsafe) {
     return unsafe
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
+         .replace(/&/g, "&amp;")
+         .replace(/</g, "&lt;")
+         .replace(/>/g, "&gt;")
+         .replace(/"/g, "&quot;")
+         .replace(/'/g, "&#039;");
 }
 
 // 复制工作流按钮事件监听器
@@ -821,17 +795,3 @@ document.querySelector('.close').addEventListener('click', closeModal);
 function closeModal() {
     document.getElementById('modal').style.display = 'none';
 }
-
-document.getElementById('copyWorkflow').addEventListener('click', function() {
-    const modalInfo = document.getElementById('modal-info');
-    const workflowText = modalInfo.innerText;
-
-    const tempTextarea = document.createElement('textarea');
-    tempTextarea.value = workflowText;
-    document.body.appendChild(tempTextarea);
-    tempTextarea.select();
-    document.execCommand('copy');
-    document.body.removeChild(tempTextarea);
-
-    showToast(translations['workflow_copied'], 'success');
-});
