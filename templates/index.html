@@ -55,7 +55,7 @@
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script>
         /* eslint-disable */
-        var allowDeleteImage = "{% if allow_delete_image %}true{% else %}false{% endif %}";
+        var allowDeleteImage = {{ 'true' if allow_delete_image else 'false' }};
         var translations = JSON.parse('{{ translations | tojson | safe }}');
         /* eslint-enable */
     </script>
