@@ -431,6 +431,9 @@ function throttle(func, limit) {
 // 添加图片缩放功能
 function setupImageZoom() {
     const modalImg = document.getElementById('modal-img');
+    let initialDistance = 0;
+    let initialScale = scale;
+
     modalImg.addEventListener('wheel', function(e) {
         e.preventDefault();
         
@@ -440,6 +443,30 @@ function setupImageZoom() {
         
         modalImg.style.transform = `scale(${scale}) translate(${translateX}px, ${translateY}px)`;
     });
+
+    modalImg.addEventListener('touchstart', function(e) {
+        if (e.touches.length === 2) {
+            initialDistance = getDistance(e.touches[0], e.touches[1]);
+            initialScale = scale;
+        }
+    });
+
+    modalImg.addEventListener('touchmove', function(e) {
+        if (e.touches.length === 2) {
+            e.preventDefault();
+            const currentDistance = getDistance(e.touches[0], e.touches[1]);
+            const scaleChange = currentDistance / initialDistance;
+            scale = initialScale * scaleChange;
+            scale = Math.min(Math.max(MIN_SCALE, scale), MAX_SCALE);
+            modalImg.style.transform = `scale(${scale}) translate(${translateX}px, ${translateY}px)`;
+        }
+    });
+
+    function getDistance(touch1, touch2) {
+        const dx = touch2.clientX - touch1.clientX;
+        const dy = touch2.clientY - touch1.clientY;
+        return Math.sqrt(dx * dx + dy * dy);
+    }
 }
 
 function setupImageDrag() {
@@ -644,6 +671,17 @@ function setupCalendarButton() {
 
         calendarContainer.addEventListener('mouseleave', () => {
             calendarContainer.classList.remove('show');
+        });
+
+        calendarButton.addEventListener('click', () => {
+            calendarContainer.classList.toggle('show');
+            if (calendarContainer.classList.contains('show')) {
+                if (!flatpickrInstance) {
+                    initializeFlatpickr();
+                } else {
+                    updateCalendarDate();
+                }
+            }
         });
     } else {
         console.warn('Calendar button or container not found');
