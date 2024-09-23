@@ -610,12 +610,10 @@ function getImageInfo(imagePath) {
                 return;
             }
 
-            // 显示工作流信息
-            for (const [key, value] of Object.entries(data)) {
-                const p = document.createElement('p');
-                p.textContent = `${key}: ${JSON.stringify(value)}`;
-                modalInfo.appendChild(p);
-            }
+            // 显示完整的工作流信息
+            const pre = document.createElement('pre');
+            pre.textContent = JSON.stringify(data, null, 2);
+            modalInfo.appendChild(pre);
         })
         .catch(error => {
             console.error('获取图片信息时出错:', error);
