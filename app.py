@@ -13,6 +13,9 @@ import configparser
 from translations import translations  # 导入translations
 from cache_utils import load_cache, save_cache, get_cache, set_cache
 from image_utils import get_all_images, get_image_info, check_for_changes, update_last_modified_times
+import webbrowser
+from threading import Thread
+import argparse
 
 app = Flask(__name__)
 babel = Babel(app)
@@ -92,18 +95,12 @@ def get_image_metadata(filename):
         file_path = os.path.join(base_dir, relative_path)
         if os.path.exists(file_path):
             try:
+                workflow_info = {}
                 with Image.open(file_path) as img:
                     metadata = img.info
-        
-                if 'prompt' in metadata:
-                    params = metadata['prompt']
-                    match = re.search(r'{.*}', params)
-                    if match:
-                        json_str = match.group(0)
-                        workflow_info = json.loads(json_str)
-                        return jsonify(workflow_info)
-                    else:
-                        return jsonify({"prompt": params})
+                
+                if 'workflow' in metadata:
+                    workflow_info = json.loads(metadata['workflow'])
                 else:
                     with open(file_path, 'rb') as f:
                         content = f.read()
@@ -113,9 +110,11 @@ def get_image_metadata(filename):
                             json_data = content[start:end].decode('utf-8', errors='ignore')
                             json_data = re.sub(r'[\x00-\x1F\x7F-\x9F]', '', json_data)
                             workflow_info = json.loads(json_data)
-                            return jsonify(workflow_info)
                 
-                return jsonify({"error": translations[locale]['metadata_not_found']})
+                if workflow_info:
+                    return jsonify(workflow_info)
+                else:
+                    return jsonify({"error": translations[locale]['metadata_not_found']})
             except json.JSONDecodeError as e:
                 return jsonify({"error": f"{translations[locale]['json_decode_error']}: {str(e)}", "raw_data": json_data})
             except Exception as e:
@@ -177,8 +176,24 @@ def refresh_images():
         app.logger.error(f"Error in refresh_images: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
+def open_browser(host, port):
+    webbrowser.open(f'http://{host}:{port}')
+
+# 移除 @app.before_first_request 装饰器
+def start_browser():
+    Thread(target=open_browser).start()
+
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='ComfyUI Moments Server')
+    parser.add_argument('--listen', type=str, default='127.0.0.1', help='IP address to listen on')
+    parser.add_argument('--port', type=int, default=5000, help='Port to listen on')
+    args = parser.parse_args()
+
     load_cache()
     if load_config():
         update_last_modified_times(IMAGES_DIRS)
-    app.run(debug=True)
+    
+    # 在应用启动后立即启动浏览器，不再限制IP
+    Thread(target=open_browser, args=(args.listen, args.port)).start()
+    
+    app.run(debug=False, host=args.listen, port=args.port)
