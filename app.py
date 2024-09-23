@@ -85,14 +85,16 @@ def serve_image(filename):
             return send_from_directory(base_dir, filename)
     return "Image not found", 404
 
-@app.route('/api/image_info/<path:filename>')
-def get_image_metadata(filename):
+@app.route('/api/image_info', methods=['POST'])
+def get_image_metadata():
     locale = get_locale()
-    filename = unquote(filename)
-    relative_path = filename.replace('images/', '', 1).replace('/', os.sep)
-    
+    data = request.json
+    filename = data.get('filename')
+    if not filename:
+        return jsonify({"error": "未提供文件名"}), 400
+
     for base_dir in IMAGES_DIRS:
-        file_path = os.path.join(base_dir, relative_path)
+        file_path = os.path.join(base_dir, filename.replace('/images/', '', 1))
         if os.path.exists(file_path):
             try:
                 workflow_info = {}
