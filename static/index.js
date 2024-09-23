@@ -752,3 +752,86 @@ window.onload = function() {
         document.documentElement.scrollTop = 0;
     };
 };
+
+function showImageDetails(filename) {
+    const modal = document.getElementById('modal');
+    const modalImg = document.getElementById('modal-img');
+    const modalInfo = document.getElementById('modal-info');
+    const copyWorkflowButton = document.getElementById('copyWorkflow');
+
+    modalImg.src = `/images/${filename}`;
+    modal.style.display = 'block';
+
+    // 清空之前的信息
+    modalInfo.innerHTML = '';
+
+    fetch(`/api/image_info/${encodeURIComponent(filename)}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                modalInfo.textContent = `${translations['error']}: ${data.error}`;
+                copyWorkflowButton.style.display = 'none';
+            } else {
+                // 格式化并显示所有信息，包括工作流
+                const formattedData = JSON.stringify(data, null, 2);
+                modalInfo.innerHTML = `<pre>${escapeHtml(formattedData)}</pre>`;
+                copyWorkflowButton.style.display = 'inline-block';
+                copyWorkflowButton.textContent = translations['copy_workflow'];
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            modalInfo.textContent = translations['error_fetching_info'];
+            copyWorkflowButton.style.display = 'none';
+        });
+}
+
+function escapeHtml(unsafe) {
+    return unsafe
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
+// 复制工作流按钮事件监听器
+document.getElementById('copyWorkflow').addEventListener('click', function(event) {
+    // 阻止事件冒泡
+    event.stopPropagation();
+    
+    const workflowText = document.getElementById('modal-info').textContent;
+    navigator.clipboard.writeText(workflowText).then(function() {
+        showToast(translations['workflow_copied'], 'success');
+    }, function(err) {
+        console.error('无法复制工作流:', err);
+        showToast(translations['copy_failed'], 'error');
+    });
+});
+
+// 确保模态框的点击事件不会关闭模态框
+document.querySelector('.modal-content').addEventListener('click', function(event) {
+    event.stopPropagation();
+});
+
+// 模态框关闭逻辑
+document.getElementById('modal').addEventListener('click', closeModal);
+document.querySelector('.close').addEventListener('click', closeModal);
+
+function closeModal() {
+    document.getElementById('modal').style.display = 'none';
+}
+
+document.getElementById('copyWorkflow').addEventListener('click', function() {
+    const modalInfo = document.getElementById('modal-info');
+    const workflowText = modalInfo.innerText;
+
+    const tempTextarea = document.createElement('textarea');
+    tempTextarea.value = workflowText;
+    document.body.appendChild(tempTextarea);
+    tempTextarea.select();
+    document.execCommand('copy');
+    document.body.removeChild(tempTextarea);
+
+    showToast(translations['workflow_copied'], 'success');
+});

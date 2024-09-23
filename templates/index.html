@@ -33,7 +33,12 @@
         <span class="close">&times;</span>
         <div class="modal-content">
             <img id="modal-img">
-            <div id="modal-info"></div>
+            <div id="modal-info-container">
+                <div id="modal-info-header">
+                    <button id="copyWorkflow" class="copy-button">{{ translations['copy_workflow'] }}</button>
+                </div>
+                <div id="modal-info"></div>
+            </div>
         </div>
     </div>
     
@@ -50,8 +55,8 @@
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script>
         /* eslint-disable */
-        var allowDeleteImage = {{ 'true' if allow_delete_image else 'false' }};
-        var translations = {{ translations | tojson | safe }};
+        var allowDeleteImage = "{% if allow_delete_image %}true{% else %}false{% endif %}";
+        var translations = JSON.parse('{{ translations | tojson | safe }}');
         /* eslint-enable */
     </script>
     <script src="{{ url_for('static', filename='index.js') }}"></script>

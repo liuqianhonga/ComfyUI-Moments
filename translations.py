@@ -40,7 +40,12 @@ translations = {
         'exclude_directories': 'Exclude Directories',
         'complete_installation': 'Complete Installation',
         'delete': 'Delete',
-        'config_save_failed': 'Configuration save failed, please try again'
+        'config_save_failed': 'Configuration save failed, please try again',
+        'copy_workflow': 'Copy Workflow',
+        'workflow_copied': 'Workflow copied to clipboard',
+        'copy_failed': 'Failed to copy workflow',
+        'error': 'Error',
+        'error_fetching_info': 'Error fetching image information'
     },
     'zh': {
         'delete_confirm': '您确定要删除这张图片吗？',
@@ -83,6 +88,11 @@ translations = {
         'exclude_directories': '排除目录',
         'complete_installation': '完成安装',
         'delete': '删除',
-        'config_save_failed': '配置保存失败，请重试'
+        'config_save_failed': '配置保存失败，请重试',
+        'copy_workflow': '复制工作流',
+        'workflow_copied': '工作流已复制到剪贴板',
+        'copy_failed': '复制工作流失败',
+        'error': '错误',
+        'error_fetching_info': '获取图片信息时出错'
     }
 }
