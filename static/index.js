@@ -98,7 +98,10 @@ function renderImages() {
                     </div>
                     <div class="image-info">
                         <span>${new Date(image.creation_time * 1000).toLocaleTimeString()}</span>
-                        ${allowDeleteImage ? `<div class="delete-icon" onclick="confirmDelete('${image.path}')">${trashBinIcon}</div>` : ''}
+                        <div class="image-info-buttons">
+                            <div class="folder-icon" onclick="openFileLocation('${image.path}')"><i class="fas fa-folder-open"></i></div>
+                            ${allowDeleteImage ? `<div class="delete-icon" onclick="confirmDelete('${image.path}')">${trashBinIcon}</div>` : ''}
+                        </div>
                     </div>
                 `;
             } else {
@@ -797,6 +800,27 @@ window.onload = function() {
     };
 };
 
+function openFileLocation(imagePath) {
+    if (imagePath) {
+        fetch('/api/open_file_location', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ filename: imagePath }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                console.log(data.message);
+            } else {
+                console.error(data.message);
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    }
+}
+
 // 辅助函数用于转义 HTML 特殊字符
 function escapeHtml(unsafe) {
     return unsafe
@@ -819,8 +843,8 @@ document.getElementById('copyWorkflow').addEventListener('click', function(event
         console.error('无法复制工作流:', err);
         showToast(translations['copy_failed'], 'error');
     });
-});
 
+});
 // 确保模态框的点击事件不会关闭模态框
 document.querySelector('.modal-content').addEventListener('click', function(event) {
     event.stopPropagation();

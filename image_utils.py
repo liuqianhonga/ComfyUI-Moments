@@ -26,6 +26,8 @@ def check_for_changes(config_file, image_dirs):  # 恢复 config_file 参数
         current_time = get_dir_last_modified_time(dir)
         if dir not in last_modified_times or current_time > last_modified_times[dir]:
             return True
+    
+    print("No changes detected")    
     return False
 
 def update_last_modified_times(image_dirs):

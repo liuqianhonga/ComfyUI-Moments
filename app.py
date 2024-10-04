@@ -16,6 +16,7 @@ from image_utils import get_all_images, get_image_info, check_for_changes, updat
 import webbrowser
 from threading import Thread
 import argparse
+import subprocess
 
 app = Flask(__name__)
 babel = Babel(app)
@@ -167,16 +168,73 @@ def refresh_images():
     global IMAGES_DIRS
     config_parser.read(CONFIG_FILE)
     IMAGES_DIRS = [dir.strip() for dir in config_parser.get('settings', 'images_dirs').split(',')]
-    
+
     try:
-        # 直接重建缓存，不检查变化
-        set_cache(None)
-        images = get_all_images(IMAGES_DIRS, SCAN_SUBDIRECTORIES, FILE_TYPES, EXCLUDE_DIRS)
-        update_last_modified_times(IMAGES_DIRS)
-        return jsonify({"refreshed": True, "images": images})
+        # 检查是否有变化
+        if check_for_changes(CONFIG_FILE, IMAGES_DIRS):
+            # 重新构建缓存
+            set_cache(None)
+            images = get_all_images(IMAGES_DIRS, SCAN_SUBDIRECTORIES, FILE_TYPES, EXCLUDE_DIRS)
+            update_last_modified_times(IMAGES_DIRS)
+            return jsonify({"refreshed": True, "images": images})
+        else:
+            # 使用现有缓存
+            images = get_cache()
+            return jsonify({"refreshed": False, "images": images})
     except Exception as e:
         app.logger.error(f"Error in refresh_images: {str(e)}")
         return jsonify({"error": str(e)}), 500
+
+@app.route('/api/open_file_location', methods=['POST'])
+def open_file_location():
+    try:
+        data = request.get_json()
+        filename = data.get('filename')
+        if not filename:
+            return jsonify({"success": False, "message": "Filename is required"}), 400
+
+        for base_dir in IMAGES_DIRS:
+            full_path = os.path.join(base_dir, os.path.relpath(filename, '/images'))
+            print(full_path)
+            if os.path.exists(full_path):
+                if os.name == 'nt':  # Windows
+                    # 使用子进程打开资源管理器并选择文件
+                    subprocess.Popen(['explorer', '/select,', full_path])
+                    import time
+                    import win32gui
+                    import win32con
+
+                    # 等待资源管理器窗口打开
+                    time.sleep(0.5)
+
+                    def set_window_topmost(hwnd, lParam):
+                        if win32gui.IsWindowVisible(hwnd) and full_path.lower() in win32gui.GetWindowText(hwnd).lower():
+                            win32gui.SetWindowPos(hwnd, win32con.HWND_TOPMOST, 0, 0, 0, 0,
+                                                    win32con.SWP_NOMOVE | win32con.SWP_NOSIZE)
+
+                    # 枚举所有窗口并将资源管理器窗口置顶
+                    win32gui.EnumWindows(set_window_topmost, None)
+
+                elif os.name == 'posix':  # macOS 和 Linux
+                    if platform.system() == 'Darwin':  # macOS
+                        # 使用 open 命令揭示文件
+                        subprocess.run(['open', '-R', full_path])
+                        # 使用 AppleScript 将 Finder 窗口置顶
+                        applescript = f'''
+                        tell application "Finder"
+                            activate
+                            reveal POSIX file "{full_path}"
+                        end tell
+                        '''
+                        subprocess.run(['osascript', '-e', applescript])
+                    else:  # Linux
+                        # 使用 xdg-open 打开文件所在目录
+                        subprocess.run(['xdg-open', os.path.dirname(full_path)])
+                        # 使用 wmctrl 将文件管理器窗口置顶
+                        subprocess.run(['wmctrl', '-r', ':ACTIVE:', '-b', 'add,above'])
+        return jsonify({"success": False, "message": "File not found"}), 404
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500
 
 def open_browser(host, port):
     webbrowser.open(f'http://{host}:{port}')
