@@ -2,7 +2,7 @@ import os
 import json
 from datetime import datetime
 import pickle
-from flask import Flask, render_template, jsonify, send_from_directory, request, redirect, url_for
+from flask import Flask, render_template, jsonify, send_from_directory, request, redirect, url_for, send_file, abort
 from flask_babel import Babel, gettext as _
 from collections import defaultdict, OrderedDict
 from urllib.parse import unquote
@@ -17,12 +17,25 @@ import webbrowser
 from threading import Thread
 import argparse
 import subprocess
+from functools import lru_cache
+import logging
 
 app = Flask(__name__)
 babel = Babel(app)
 
+# 设置日志
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
+
 config_parser = configparser.ConfigParser()
 CONFIG_FILE = 'config.ini'
+
+# 全局变量
+IMAGES_DIRS = []
+ALLOW_DELETE_IMAGE = False
+SCAN_SUBDIRECTORIES = True
+FILE_TYPES = ()
+EXCLUDE_DIRS = set()
 
 def load_config():
     global IMAGES_DIRS, ALLOW_DELETE_IMAGE, SCAN_SUBDIRECTORIES, FILE_TYPES, EXCLUDE_DIRS
@@ -35,6 +48,15 @@ def load_config():
         EXCLUDE_DIRS = set(dir.strip() for dir in config_parser.get('advanced', 'exclude_dirs', fallback='thumbnails,temp').split(','))
         return True
     return False
+
+# 使用 LRU 缓存来存储文件路径
+@lru_cache(maxsize=1000)
+def find_image_path(filename):
+    for base_dir in IMAGES_DIRS:
+        file_path = os.path.join(base_dir, filename)
+        if os.path.exists(file_path):
+            return file_path
+    return None
 
 def get_locale():
     return request.accept_languages.best_match(['en', 'zh'])
@@ -80,11 +102,16 @@ def get_images():
 
 @app.route('/images/<path:filename>')
 def serve_image(filename):
-    for base_dir in IMAGES_DIRS:
-        file_path = os.path.join(base_dir, filename)
-        if os.path.exists(file_path):
-            return send_from_directory(base_dir, filename)
-    return "Image not found", 404
+    try:
+        file_path = find_image_path(filename)
+        if file_path:
+            return send_file(file_path, conditional=True)
+        else:
+            logger.warning(f"Image not found: {filename}")
+            abort(404)
+    except Exception as e:
+        logger.error(f"Error serving image {filename}: {str(e)}")
+        abort(500)
 
 @app.route('/api/image_info', methods=['POST'])
 def get_image_metadata():
@@ -257,3 +284,15 @@ if __name__ == '__main__':
     Thread(target=open_browser, args=(args.listen, args.port)).start()
     
     app.run(debug=False, host=args.listen, port=args.port)
+
+# 在应用启动时预热缓存
+@app.before_first_request
+def warm_up_cache():
+    logger.info("Warming up image path cache...")
+    for base_dir in IMAGES_DIRS:
+        for root, _, files in os.walk(base_dir):
+            for file in files:
+                if file.lower().endswith(FILE_TYPES):
+                    relative_path = os.path.relpath(os.path.join(root, file), base_dir)
+                    find_image_path(relative_path)
+    logger.info("Image path cache warm-up complete.")
