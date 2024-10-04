@@ -164,7 +164,13 @@ body {
     color: #65676b;
 }
 
-.delete-icon {
+.image-info-buttons {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.delete-icon, .folder-icon {
     cursor: pointer;
     opacity: 0.7;
     transition: all 0.2s ease;
@@ -175,17 +181,17 @@ body {
     justify-content: center;
 }
 
-.delete-icon:hover {
+.delete-icon:hover, .folder-icon:hover {
     opacity: 1;
 }
 
-.delete-icon i {
+.delete-icon i, .folder-icon i {
     font-size: 18px;
     color: #65676b;
     transition: color 0.2s ease;
 }
 
-.delete-icon:hover i {
+.delete-icon:hover i, .folder-icon:hover i {
     color: #e53e3e;
 }
 
