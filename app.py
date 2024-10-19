@@ -278,7 +278,8 @@ if __name__ == '__main__':
 
     load_cache()
     if load_config():
-        update_last_modified_times(IMAGES_DIRS)
+        # 更新图片缓存
+        get_all_images(IMAGES_DIRS, SCAN_SUBDIRECTORIES, FILE_TYPES, EXCLUDE_DIRS)
     
     # 在应用启动后立即启动浏览器，不再限制IP
     Thread(target=open_browser, args=(args.listen, args.port)).start()
