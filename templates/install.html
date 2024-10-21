@@ -74,13 +74,13 @@
         function updateDirList() {
             const dirList = document.getElementById('dirList');
             dirList.innerHTML = dirs.map(dir => 
-                `<div class="dir-item">${dir} <button type="button" class="btn-remove" onclick="removeDir('${dir}')">${translations['delete']}</button></div>`
+                `<div class="dir-item">${dir} <button type="button" class="btn-remove" onclick="removeDir('${encodeURIComponent(dir)}')">${translations['delete']}</button></div>`
             ).join('');
             document.getElementById('images_dirs').value = dirs.join(',');
         }
 
         function removeDir(dir) {
-            dirs = dirs.filter(d => d !== dir);
+            dirs = dirs.filter(d => d !== decodeURIComponent(dir));
             updateDirList();
         }
 
@@ -141,7 +141,7 @@
                                 const dirList = document.getElementById('dirList');
                                 dirs = config[section][key].split(',');
                                 dirList.innerHTML = dirs.map(dir => 
-                                    `<div class="dir-item">${dir} <button type="button" class="btn-remove" onclick="removeDir('${dir}')">${translations['delete']}</button></div>`
+                                    `<div class="dir-item">${dir} <button type="button" class="btn-remove" onclick="removeDir('${encodeURIComponent(dir)}')">${translations['delete']}</button></div>`
                                 ).join('');
                             }
 
