@@ -29,6 +29,7 @@ logger = logging.getLogger(__name__)
 
 config_parser = configparser.ConfigParser()
 CONFIG_FILE = 'config.ini'
+EXAMPLE_CONFIG_FILE = 'config.ini.example'
 
 # 全局变量
 IMAGES_DIRS = []
@@ -76,14 +77,14 @@ def index():
 def install():
     if request.method == 'POST':
         config_parser['settings'] = {
-            'images_dirs': request.form.get('imageDirs', ''),
-            'allow_delete_image': 'True' if request.form.get('allowDelete') == 'on' else 'False'
+            'images_dirs': request.form.get('images_dirs', ''),
+            'allow_delete_image': 'True' if request.form.get('allow_delete_image') == 'on' else 'False'
         }
         
         config_parser['advanced'] = {
-            'scan_subdirectories': 'True' if request.form.get('scanSubdirs') == 'on' else 'False',
-            'file_types': request.form.get('fileTypes', '.png,.jpg,.jpeg,.gif,.webp'),
-            'exclude_dirs': request.form.get('excludeDirs', 'thumbnails,temp')
+            'scan_subdirectories': 'True' if request.form.get('scan_subdirectories') == 'on' else 'False',
+            'file_types': request.form.get('file_types', '.png,.jpg,.jpeg,.gif,.webp'),
+            'exclude_dirs': request.form.get('exclude_dirs', 'thumbnails,temp')
         }
         
         with open(CONFIG_FILE, 'w') as configfile:
@@ -93,7 +94,16 @@ def install():
         return jsonify({'success': True})
     
     locale = get_locale()
-    return render_template('install.html', translations=translations[locale])
+    config_content = load_config_content()
+    return render_template('install.html', translations=translations[locale], config_content=config_content)
+
+def load_config_content():
+    if os.path.exists(CONFIG_FILE):
+        with open(CONFIG_FILE, 'r') as file:
+            return file.read()
+    else:
+        with open(EXAMPLE_CONFIG_FILE, 'r') as file:
+            return file.read()
 
 @app.route('/api/images')
 def get_images():

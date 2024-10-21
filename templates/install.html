@@ -19,17 +19,17 @@
                     <button type="button" id="addDirBtn" class="btn btn-secondary">{{ translations['add'] }}</button>
                 </div>
                 <div id="dirList" class="mt-2"></div>
-                <input type="hidden" id="imageDirs" name="imageDirs">
+                <input type="hidden" id="images_dirs" name="images_dirs">
             </div>
             <div class="form-group">
                 <label class="form-checkbox">
-                    <input type="checkbox" id="allowDelete" name="allowDelete" checked>
+                    <input type="checkbox" id="allowDelete" name="allow_delete_image" checked>
                     <span>{{ translations['allow_delete_image'] }}</span>
                 </label>
             </div>
             <div class="form-group">
                 <label class="form-checkbox">
-                    <input type="checkbox" id="scanSubdirs" name="scanSubdirs" checked>
+                    <input type="checkbox" id="scanSubdirs" name="scan_subdirectories" checked>
                     <span>{{ translations['scan_subdirectories'] }}</span>
                 </label>
             </div>
@@ -37,13 +37,13 @@
                 <label class="form-label" for="fileTypes">
                     {{ translations['file_types'] }}
                 </label>
-                <input class="form-input" id="fileTypes" name="fileTypes" type="text" value=".png,.jpg,.jpeg,.gif,.webp">
+                <input class="form-input" id="fileTypes" name="file_types" type="text" value=".png,.jpg,.jpeg,.gif,.webp">
             </div>
             <div class="form-group">
                 <label class="form-label" for="excludeDirs">
                     {{ translations['exclude_directories'] }}
                 </label>
-                <input class="form-input" id="excludeDirs" name="excludeDirs" type="text" value="thumbnails,temp">
+                <input class="form-input" id="excludeDirs" name="exclude_dirs" type="text" value="thumbnails,temp">
             </div>
             <div>
                 <button class="btn btn-primary" type="submit">
@@ -51,6 +51,10 @@
                 </button>
             </div>
         </form>
+        <div class="config-content">
+            <h2 class="text-xl mt-6">{{ translations['config_content'] }}</h2>
+            <pre>{{ config_content }}</pre>
+        </div>
     </div>
     <script>
         /* eslint-disable */
@@ -72,7 +76,7 @@
             dirList.innerHTML = dirs.map(dir => 
                 `<div class="dir-item">${dir} <button type="button" class="btn-remove" onclick="removeDir('${dir}')">${translations['delete']}</button></div>`
             ).join('');
-            document.getElementById('imageDirs').value = dirs.join(',');
+            document.getElementById('images_dirs').value = dirs.join(',');
         }
 
         function removeDir(dir) {
@@ -95,6 +99,57 @@
                     alert(translations['config_save_failed']);
                 }
             });
+        });
+
+        // 解析ini格式的配置内容并转换为JSON格式
+        function parseIniToJson(iniContent) {
+            const lines = iniContent.split('\n');
+            const result = {};
+            let currentSection = '';
+
+            lines.forEach(line => {
+                line = line.trim();
+                if (line.startsWith('[') && line.endsWith(']')) {
+                    currentSection = line.slice(1, -1);
+                    result[currentSection] = {};
+                } else if (line && !line.startsWith(';')) {
+                    const [key, value] = line.split('=').map(part => part.trim());
+                    if (currentSection) {
+                        result[currentSection][key] = value;
+                    } else {
+                        result[key] = value;
+                    }
+                }
+            });
+
+            return result;
+        }
+
+        // 绑定配置内容到表单
+        document.addEventListener('DOMContentLoaded', function() {
+            const configContent = document.querySelector('.config-content pre').innerText;
+            const config = parseIniToJson(configContent);
+
+            for (const section in config) {
+                for (const key in config[section]) {
+                    const input = document.querySelector(`input[name="${key}"]`);
+                    if (input) {
+                        if (input.type === 'checkbox') {
+                            input.checked = config[section][key] === 'True';
+                        } else {
+                            if (key === 'images_dirs') {
+                                const dirList = document.getElementById('dirList');
+                                dirs = config[section][key].split(',');
+                                dirList.innerHTML = dirs.map(dir => 
+                                    `<div class="dir-item">${dir} <button type="button" class="btn-remove" onclick="removeDir('${dir}')">${translations['delete']}</button></div>`
+                                ).join('');
+                            }
+
+                            input.value = config[section][key];
+                        }
+                    }
+                }
+            }
         });
     </script>
 </body>
