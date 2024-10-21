@@ -19,6 +19,7 @@ import argparse
 import subprocess
 from functools import lru_cache
 import logging
+import platform
 
 app = Flask(__name__)
 babel = Babel(app)
