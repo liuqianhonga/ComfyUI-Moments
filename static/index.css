@@ -642,3 +642,41 @@ body {
         grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
     }
 }
+
+.folder-info {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer;
+}
+
+.subdirectory-name {
+    font-size: 12px;
+    color: #65676b;
+    max-width: 80px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    transition: color 0.2s ease;
+}
+
+.image-info-buttons {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.folder-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.folder-info:hover .folder-icon i,
+.folder-info:hover .subdirectory-name {
+    color: #e53e3e;
+}
+
+.folder-icon:hover i {
+    color: inherit;
+}

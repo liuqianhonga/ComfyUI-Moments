@@ -91,6 +91,8 @@ function renderImages() {
             
             if (i < images.length) {
                 const image = images[i];
+                // 获取二级目录名称
+                const subDirName = getSubDirectoryName(image.path);
                 container.innerHTML = `
                     <div class="image-wrapper">
                         <div class="image-placeholder"></div>
@@ -99,7 +101,12 @@ function renderImages() {
                     <div class="image-info">
                         <span>${new Date(image.creation_time * 1000).toLocaleTimeString()}</span>
                         <div class="image-info-buttons">
-                            <div class="folder-icon" onclick="openFileLocation('${image.path}')"><i class="fas fa-folder-open"></i></div>
+                            <div class="folder-info" onclick="openFileLocation('${image.path}')">
+                                <div class="folder-icon">
+                                    <i class="fas fa-folder-open"></i>
+                                </div>
+                                ${subDirName ? `<span class="subdirectory-name">${subDirName}</span>` : ''}
+                            </div>
                             ${allowDeleteImage ? `<div class="delete-icon" onclick="confirmDelete('${image.path}')">${trashBinIcon}</div>` : ''}
                         </div>
                     </div>
@@ -206,7 +213,7 @@ function setupInfiniteScroll() {
     }
 }
 
-// 删除原来的 lazyLoadImages 和 isInViewport 函数，因为我们不再需要它们
+// 删除原来的 lazyLoadImages 和 isInViewport 函数，��为我们不再需要它们
 
 function scrollToDate(date) {
     const element = document.getElementById(`date-${date}`);
@@ -856,4 +863,17 @@ document.querySelector('.close').addEventListener('click', closeModal);
 
 function closeModal() {
     document.getElementById('modal').style.display = 'none';
+}
+
+// 添加获取二级目录名称的函数
+function getSubDirectoryName(path) {
+    // 移除 '/images/' 前缀
+    const relativePath = path.replace('/images/', '');
+    const parts = relativePath.split('/');
+    
+    // 如果路径包含多于一个目录，返回第一个目录名称
+    if (parts.length > 1) {
+        return parts[0];
+    }
+    return '';
 }
