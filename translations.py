@@ -45,7 +45,8 @@ translations = {
         'workflow_copied': 'Workflow copied to clipboard',
         'copy_failed': 'Failed to copy workflow',
         'error': 'Error',
-        'error_fetching_info': 'Error fetching image information'
+        'error_fetching_info': 'Error fetching image information',
+        'workflow_not_found': 'Workflow not found'
     },
     'zh': {
         'delete_confirm': '您确定要删除这张图片吗？',
@@ -93,6 +94,7 @@ translations = {
         'workflow_copied': '工作流已复制到剪贴板',
         'copy_failed': '复制工作流失败',
         'error': '错误',
-        'error_fetching_info': '获取图片信息时出错'
+        'error_fetching_info': '获取图片信息时出错',
+        'workflow_not_found': '暂未找到工作流'
     }
 }

@@ -649,11 +649,10 @@ function getImageInfo(imagePath) {
         modalInfo.innerHTML = '';
         
         if (data.error) {
-            modalInfo.textContent = `错误: ${data.error}`;
+            modalInfo.textContent = translations['workflow_not_found'] || '暂未找到工作流';
             return;
         }
 
-        // 显示完整的工作流信息
         const pre = document.createElement('pre');
         pre.textContent = JSON.stringify(data, null, 2);
         modalInfo.appendChild(pre);
@@ -661,7 +660,7 @@ function getImageInfo(imagePath) {
     .catch(error => {
         console.error('获取图片信息时出错:', error);
         const modalInfo = document.getElementById('modal-info');
-        modalInfo.textContent = '获取图片信息时出错';
+        modalInfo.textContent = translations['workflow_not_found'] || '暂未找到工作流';
     });
 }
 
