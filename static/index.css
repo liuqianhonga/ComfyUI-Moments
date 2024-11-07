@@ -1,69 +1,6 @@
-body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-    margin: 0;
-    padding: 0;
-    background-color: #f0f2f5;
-    color: #1c1e21;
-}
+@import 'common.css';
 
-.app-header {
-    background-color: #ffffff;
-    color: #333333;
-    padding: 10px 20px;
-    display: grid;
-    grid-template-columns: auto auto auto;
-    align-items: center;
-    justify-content: space-between;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 1000;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    height: 60px;
-}
-
-.app-header h1 {
-    margin: 0;
-    font-size: 24px;
-    font-weight: 500;
-    display: flex;
-    align-items: center;
-}
-
-.app-header h1 i {
-    margin-right: 10px; 
-    font-size: 28px;   
-}
-
-.app-header nav {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-}
-
-.app-header nav button {
-    background-color: transparent;
-    color: #333333;
-    border: none;
-    padding: 8px;
-    border-radius: 50%;
-    cursor: pointer;
-    font-size: 18px;
-    transition: background-color 0.3s, transform 0.3s;
-}
-
-.app-header nav button:hover {
-    background-color: #f0f2f5;
-    transform: rotate(180deg);
-}
-
-#app {
-    max-width: 1200px;
-    margin: 70px auto 0;
-    padding: 20px;
-}
-
+/* 时间线样式 */
 #timeline {
     width: 100%;
     max-width: 1920px;
@@ -72,6 +9,7 @@ body {
     box-sizing: border-box;
 }
 
+/* 日期容器样式 */
 .date-container {
     margin-bottom: 40px;
     background-color: white;
@@ -94,6 +32,7 @@ body {
     z-index: 10;
 }
 
+/* 图片网格样式 */
 .images-container {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -157,6 +96,7 @@ body {
     transform: scale(1.05);
 }
 
+/* 图片信息样式 */
 .image-info {
     padding: 10px;
     display: flex;
@@ -169,7 +109,7 @@ body {
 .image-info-buttons {
     display: flex;
     align-items: center;
-    justify-content: center;
+    gap: 10px;
 }
 
 .delete-icon, .folder-icon {
@@ -193,10 +133,33 @@ body {
     transition: color 0.2s ease;
 }
 
-.delete-icon:hover i, .folder-icon:hover i {
+.delete-icon:hover i {
     color: #e53e3e;
 }
 
+.folder-info {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer;
+}
+
+.subdirectory-name {
+    font-size: 12px;
+    color: #65676b;
+    max-width: 80px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    transition: color 0.2s ease;
+}
+
+.folder-info:hover .folder-icon i,
+.folder-info:hover .subdirectory-name {
+    color: #e53e3e;
+}
+
+/* 模态框样式 */
 .modal {
     display: none;
     position: fixed;
@@ -262,10 +225,6 @@ body {
     user-select: text;
 }
 
-#modal-info * {
-    user-select: text;
-}
-
 .close {
     position: absolute;
     top: 15px;
@@ -276,13 +235,6 @@ body {
     cursor: pointer;
     transition: 0.3s;
     z-index: 1002;
-}
-
-.close:hover,
-.close:focus {
-    color: #bbb;
-    text-decoration: none;
-    cursor: pointer;
 }
 
 .copy-button {
@@ -316,6 +268,7 @@ body {
     background: rgba(255, 255, 255, 0.5);
 }
 
+/* 确认对话框样式 */
 .confirm-dialog {
     display: none;
     position: fixed;
@@ -379,207 +332,7 @@ body {
     background-color: #d8dadf;
 }
 
-.calendar-wrapper {
-    position: relative;
-    margin-right: 10px;
-}
-
-.calendar-container {
-    display: none;
-    position: absolute;
-    top: 100%;
-    right: 0;
-    background-color: white;
-    border-radius: 10px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    z-index: 1000;
-    padding: 10px;
-    width: 300px;
-}
-
-.calendar-container.show {
-    display: block;
-}
-
-#calendar {
-    width: 100%;
-}
-
-.flatpickr-calendar {
-    box-shadow: none !important;
-    width: 100% !important;
-    max-width: none !important;
-    padding: 0 !important;
-}
-
-.flatpickr-months {
-    display: flex;
-    width: 100%;
-}
-
-.flatpickr-month {
-    background: transparent;
-}
-
-.flatpickr-current-month {
-    padding: 0;
-}
-
-.flatpickr-weekdays {
-    background: transparent;
-}
-
-.flatpickr-days {
-    width: 100%;
-}
-
-.dayContainer {
-    width: 100%;
-    min-width: 280px;
-    max-width: 100%;
-    padding: 5px;
-    justify-content: space-around;
-}
-
-.flatpickr-day {
-    border-radius: 50%;
-    max-width: none;
-    height: 40px;
-    line-height: 40px;
-    width: 40px;
-    margin: 2px;
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.flatpickr-day.selected,
-.flatpickr-day.startRange,
-.flatpickr-day.endRange,
-.flatpickr-day.selected.inRange,
-.flatpickr-day.startRange.inRange,
-.flatpickr-day.endRange.inRange,
-.flatpickr-day.selected:focus,
-.flatpickr-day.startRange:focus,
-.flatpickr-day.endRange:focus,
-.flatpickr-day.selected:hover,
-.flatpickr-day.startRange:hover,
-.flatpickr-day.endRange:hover,
-.flatpickr-day.selected.prevMonthDay,
-.flatpickr-day.startRange.prevMonthDay,
-.flatpickr-day.endRange.prevMonthDay,
-.flatpickr-day.selected.nextMonthDay,
-.flatpickr-day.startRange.nextMonthDay,
-.flatpickr-day.endRange.nextMonthDay {
-    background: #e6e6e6;
-    border-color: #e6e6e6;
-    border-radius: 50%;
-    color: #393939;
-}
-
-.flatpickr-day.inRange {
-    background: #e6f2ff;
-    border-color: #e6f2ff;
-    box-shadow: none;
-    border-radius: 50%;
-}
-
-.flatpickr-day.today {
-    border-color: #e6f2ff;
-}
-
-.flatpickr-day.today:hover,
-.flatpickr-day.today:focus {
-    border-color: #e6f2ff;
-    background: #e6f2ff;
-    color: #1877f2;
-}
-
-.flatpickr-day.selected.today,
-.flatpickr-day.startRange.today,
-.flatpickr-day.endRange.today {
-    color: #393939;
-}
-
-.image-count-badge {
-    position: absolute;
-    top: -5px;
-    right: -5px;
-    background-color: #1877f2;
-    color: white;
-    border-radius: 40%;
-    width: 20px;
-    height: 15px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 10px;
-    z-index: 1;
-}
-
-#calendarButton {
-    margin-right: 10px;
-}
-
-.flatpickr-months .flatpickr-prev-month,
-.flatpickr-months .flatpickr-next-month {
-    border-radius: 0;
-    border: none;
-    max-width: none;
-    height: 35px;
-}
-
-.toast {
-    position: fixed;
-    top: 80px;
-    right: 20px;
-    z-index: 1100;
-    max-width: 350px;
-    padding: 0.75rem 1.5rem;
-    border-radius: 0.375rem;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    opacity: 0;
-    transform: translateY(-1rem);
-    transition: opacity 0.3s ease-out, transform 0.3s ease-out;
-}
-
-.toast.show {
-    opacity: 1;
-    transform: translateY(0);
-}
-
-.toast-message {
-    flex-grow: 1;
-    font-size: 0.875rem;
-    line-height: 1.25rem;
-}
-
-.toast-close {
-    margin-left: 0.75rem;
-    cursor: pointer;
-    font-size: 1.25rem;
-    line-height: 1;
-}
-
-.toast.info {
-    background-color: #EBF8FF;
-    color: #2B6CB0;
-}
-
-.toast.success {
-    background-color: #F0FFF4;
-    color: #2F855A;
-}
-
-.toast.error {
-    background-color: #FFF5F5;
-    color: #C53030;
-}
-
+/* 回到顶部按钮样式 */
 #backToTop {
     display: none;
     position: fixed;
@@ -602,6 +355,51 @@ body {
 #backToTop:hover {
     background-color: #333;
 }
+
+/* 提示词和工作流样式 */
+.prompt-container {
+    margin-bottom: 20px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 6px;
+    padding: 10px;
+}
+
+.prompt-title {
+    font-size: 16px;
+    font-weight: bold;
+    color: #f1f1f1;
+    margin-bottom: 10px;
+    padding-bottom: 5px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.prompt-item {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 8px 12px;
+    border-radius: 4px;
+    margin-bottom: 8px;
+    color: #f1f1f1;
+    font-size: 14px;
+    line-height: 1.4;
+    word-break: break-word;
+}
+
+.workflow-container {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 6px;
+    padding: 10px;
+}
+
+.workflow-title {
+    font-size: 16px;
+    font-weight: bold;
+    color: #f1f1f1;
+    margin-bottom: 10px;
+    padding-bottom: 5px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* 响应式布局 */
 @media (min-width: 768px) {
     .images-container {
         grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -642,103 +440,5 @@ body {
     .images-container {
         grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
     }
-}
-
-.folder-info {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    cursor: pointer;
-}
-
-.subdirectory-name {
-    font-size: 12px;
-    color: #65676b;
-    max-width: 80px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    transition: color 0.2s ease;
-}
-
-.image-info-buttons {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.folder-icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.folder-info:hover .folder-icon i,
-.folder-info:hover .subdirectory-name {
-    color: #e53e3e;
-}
-
-.folder-icon:hover i {
-    color: inherit;
-}
-
-.menu-container {
-    display: flex;
-    gap: 20px;
-    justify-content: center;
-    align-items: center;
-}
-
-.menu-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 16px;
-    border-radius: 20px;
-    color: #666;
-    text-decoration: none;
-    transition: all 0.3s ease;
-}
-
-.menu-item i {
-    font-size: 16px;
-}
-
-.menu-item span {
-    font-size: 14px;
-    font-weight: 500;
-}
-
-.menu-item:hover {
-    background-color: #f0f2f5;
-    color: #1877f2;
-}
-
-.menu-item.active {
-    background-color: #e7f3ff;
-    color: #1877f2;
-}
-
-/* 添加建设中页面的样式 */
-.under-construction {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: calc(100vh - 80px);
-    color: #666;
-    text-align: center;
-}
-
-.under-construction i {
-    font-size: 64px;
-    margin-bottom: 20px;
-    color: #1877f2;
-}
-
-.under-construction h2 {
-    font-size: 24px;
-    font-weight: 500;
-    margin: 0;
 }
 
