@@ -2,7 +2,12 @@
 
 这是一个专门用于浏览和管理 ComfyUI 生成的图片文件，当然其他目录的图片也可以。它支持按日期查看图片，显示详细的图片工作流信息，并可以方便将图片移动到回收站。
 
+
+### 主页面
 ![ComfyUI Moments 截图](screenshot/moments.png)
+
+### 图片详情页面
+![图片详情截图](screenshot/image-detail.png)
 
 
 ## 功能特点
