@@ -281,6 +281,15 @@ def open_browser(host, port):
 def start_browser():
     Thread(target=open_browser).start()
 
+@app.route('/prompts')
+def prompts():
+    if not load_config():
+        return redirect(url_for('install'))
+    locale = get_locale()
+    return render_template('prompts.html', 
+                         allow_delete_image=ALLOW_DELETE_IMAGE,
+                         translations=translations[locale])
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='ComfyUI Moments Server')
     parser.add_argument('--listen', type=str, default='127.0.0.1', help='IP address to listen on')

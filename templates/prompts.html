@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="{{ request.accept_languages.best_match(['en', 'zh']) }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ComfyUI Moments - {{ translations['prompts'] }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='lib/flatpickr/flatpickr.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='index.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='lib/fontawesome/css/all.min.css') }}">
+</head>
+<body>
+    <header class="app-header">
+        <h1><i class="fas fa-photo-video"></i>ComfyUI Moments</h1>
+        <div class="menu-container">
+            <a href="{{ url_for('index') }}" class="menu-item {{ 'active' if request.endpoint == 'index' }}">
+                <i class="fas fa-images"></i>
+                <span>{{ translations['images'] }}</span>
+            </a>
+            <a href="{{ url_for('prompts') }}" class="menu-item {{ 'active' if request.endpoint == 'prompts' }}">
+                <i class="fas fa-magic"></i>
+                <span>{{ translations['prompts'] }}</span>
+            </a>
+        </div>
+        <nav>
+            <button id="refreshButton" aria-label="{{ translations['refresh'] }}"><i class="fas fa-sync-alt"></i></button>
+        </nav>
+    </header>
+    <div id="app">
+        <div class="under-construction">
+            <i class="fas fa-tools"></i>
+            <h2>{{ translations['under_construction'] }}</h2>
+        </div>
+    </div>
+</body>
+</html> 
