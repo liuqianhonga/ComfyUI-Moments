@@ -213,7 +213,7 @@ function setupInfiniteScroll() {
     }
 }
 
-// 删除原来的 lazyLoadImages 和 isInViewport 函数，��为我们不再需要它们
+// 删除原来的 lazyLoadImages 和 isInViewport 函数，为我们不再需要它们
 
 function scrollToDate(date) {
     const element = document.getElementById(`date-${date}`);
@@ -653,15 +653,60 @@ function getImageInfo(imagePath) {
             return;
         }
 
-        const pre = document.createElement('pre');
-        pre.textContent = JSON.stringify(data, null, 2);
-        modalInfo.appendChild(pre);
+        // 创建提示词容器
+        const promptContainer = document.createElement('div');
+        promptContainer.className = 'prompt-container';
+
+        // 提取提示词
+        const prompts = extractPromptsFromWorkflow(data);
+        
+        if (prompts.length > 0) {
+            const promptTitle = document.createElement('div');
+            promptTitle.className = 'prompt-title';
+            promptTitle.textContent = translations['prompts'] || '提示词';
+            promptContainer.appendChild(promptTitle);
+
+            prompts.forEach(prompt => {
+                const promptElement = document.createElement('div');
+                promptElement.className = 'prompt-item';
+                promptElement.textContent = prompt;
+                promptContainer.appendChild(promptElement);
+            });
+        } else {
+            promptContainer.textContent = translations['no_prompts_found'] || '未找到提示词';
+        }
+
+        // 添加到模态框
+        modalInfo.appendChild(promptContainer);
+
+        // 保存完整的工作流数据用于复制功能
+        modalInfo.dataset.workflow = JSON.stringify(data);
     })
     .catch(error => {
         console.error('获取图片信息时出错:', error);
         const modalInfo = document.getElementById('modal-info');
         modalInfo.textContent = translations['workflow_not_found'] || '暂未找到工作流';
     });
+}
+
+// 添加提取提示词的函数
+function extractPromptsFromWorkflow(workflow) {
+    const prompts = [];
+    try {
+        // 遍历工作流中的所有节点
+        for (const node of workflow.nodes) {
+            if (node.type === "CLIPTextEncode" 
+                && node.outputs 
+                && node.outputs[0]
+                && node.outputs[0].links
+                && node.outputs[0].links.length > 0) {
+                prompts.push(node.widgets_values[0]);
+            }
+        }
+    } catch (error) {
+        console.error('提取提示词时出错:', error);
+    }
+    return prompts;
 }
 
 function setupCalendarButton() {
@@ -837,20 +882,23 @@ function escapeHtml(unsafe) {
          .replace(/'/g, "&#039;");
 }
 
-// 复制工作流按钮事件监听器
+// 修改复制工作流按钮的事件监听器
 document.getElementById('copyWorkflow').addEventListener('click', function(event) {
-    // 阻止事件冒泡
     event.stopPropagation();
     
-    const workflowText = document.getElementById('modal-info').textContent;
-    navigator.clipboard.writeText(workflowText).then(function() {
-        showToast(translations['workflow_copied'], 'success');
-    }, function(err) {
-        console.error('无法复制工作流:', err);
-        showToast(translations['copy_failed'], 'error');
-    });
-
+    const modalInfo = document.getElementById('modal-info');
+    const workflowData = modalInfo.dataset.workflow;
+    
+    if (workflowData) {
+        navigator.clipboard.writeText(workflowData).then(function() {
+            showToast(translations['workflow_copied'], 'success');
+        }, function(err) {
+            console.error('无法复制工作流:', err);
+            showToast(translations['copy_failed'], 'error');
+        });
+    }
 });
+
 // 确保模态框的点击事件不会关闭模态框
 document.querySelector('.modal-content').addEventListener('click', function(event) {
     event.stopPropagation();
