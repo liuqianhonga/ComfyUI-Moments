@@ -50,6 +50,7 @@ translations = {
         'images': 'Images',
         'prompts': 'Prompts',
         'under_construction': 'Page Under Construction',
+        'no_prompts_found': 'No prompts found',
     },
     'zh': {
         'delete_confirm': '您确定要删除这张图片吗？',
@@ -78,7 +79,7 @@ translations = {
         'Exclude Directories': '排除目录',
         'Complete Installation': '完成安装',
         'Delete': '删除',
-        'Configuration save failed, please try again': '配置保存失败，请重试',
+        'Configuration save failed, please try again': '配置保存失败��请重试',
         'delete': '删除',
         'config_save_failed': '配置保存失败，请重试',
         'install_title': 'ComfyUI Moments - 安装',
@@ -102,5 +103,6 @@ translations = {
         'images': '图片',
         'prompts': '提示词',
         'under_construction': '页面建设中',
+        'no_prompts_found': '未找到提示词',
     }
 }
