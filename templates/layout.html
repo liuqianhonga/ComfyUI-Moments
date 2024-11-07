@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="{{ request.accept_languages.best_match(['en', 'zh']) }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}ComfyUI Moments{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='lib/flatpickr/flatpickr.min.css') }}">
+    {% block styles %}{% endblock %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='lib/fontawesome/css/all.min.css') }}">
+</head>
+<body>
+    <header class="app-header">
+        <h1><i class="fas fa-photo-video"></i>ComfyUI Moments</h1>
+        <div class="menu-container">
+            <a href="{{ url_for('index') }}" class="menu-item {{ 'active' if request.endpoint == 'index' }}">
+                <i class="fas fa-images"></i>
+                <span>{{ translations['images'] }}</span>
+            </a>
+            <a href="{{ url_for('prompts') }}" class="menu-item {{ 'active' if request.endpoint == 'prompts' }}">
+                <i class="fas fa-magic"></i>
+                <span>{{ translations['prompts'] }}</span>
+            </a>
+        </div>
+        <nav>
+            {% block nav_tools %}{% endblock %}
+        </nav>
+    </header>
+
+    {% block content %}{% endblock %}
+
+    {% block scripts %}
+        <script>
+            /* eslint-disable */
+            var translations = JSON.parse('{{ translations | tojson | safe }}');
+            /* eslint-enable */
+        </script>
+    {% endblock %}
+</body>
+</html> 
