@@ -635,6 +635,7 @@ function showError(message) {
     alert(message);
 }
 
+// 修改 getImageInfo 函数中创建标题的部分
 function getImageInfo(imagePath) {
     fetch(`/api/image_info`, {
         method: 'POST',
@@ -658,14 +659,32 @@ function getImageInfo(imagePath) {
         promptContainer.className = 'prompt-container';
 
         // 提取提示词
-        const prompts = extractPromptsFromWorkflow(data);
+        const prompts = [];
+        if (data.nodes) {
+            for (const node of data.nodes) {
+                if (node.type === "CLIPTextEncode" && 
+                    node.outputs && 
+                    node.outputs.length > 0 && 
+                    node.outputs[0].links && 
+                    node.outputs[0].links.length > 0 && 
+                    node.widgets_values && 
+                    node.widgets_values.length > 0) {
+                    prompts.push(node.widgets_values[0]);
+                }
+            }
+        }
         
-        if (prompts.length > 0) {
-            const promptTitle = document.createElement('div');
-            promptTitle.className = 'prompt-title';
-            promptTitle.textContent = translations['prompts'] || '提示词';
-            promptContainer.appendChild(promptTitle);
+        const promptTitle = document.createElement('div');
+        promptTitle.className = 'prompt-title';
+        promptTitle.innerHTML = `
+            ${translations['prompts'] || '提示词'}
+            <a href="javascript:void(0)" class="translate-link" onclick="translatePrompts(this)">
+                ${translations['translate'] || '翻译'}
+            </a>
+        `;
+        promptContainer.appendChild(promptTitle);
 
+        if (prompts.length > 0) {
             prompts.forEach(prompt => {
                 const promptElement = document.createElement('div');
                 promptElement.className = 'prompt-item';
@@ -673,14 +692,15 @@ function getImageInfo(imagePath) {
                 promptContainer.appendChild(promptElement);
             });
         } else {
-            promptContainer.textContent = translations['no_prompts_found'] || '未找到提示词';
+            promptContainer.appendChild(document.createTextNode(translations['no_prompts_found'] || '未找到提示词'));
         }
 
         // 添加到模态框
         modalInfo.appendChild(promptContainer);
 
-        // 保存完整的工作流数据用于复制功能
+        // 保存工作流数据和提示词到 dataset
         modalInfo.dataset.workflow = JSON.stringify(data);
+        modalInfo.dataset.prompts = JSON.stringify(prompts);
     })
     .catch(error => {
         console.error('获取图片信息时出错:', error);
@@ -689,24 +709,73 @@ function getImageInfo(imagePath) {
     });
 }
 
-// 添加提取提示词的函数
-function extractPromptsFromWorkflow(workflow) {
-    const prompts = [];
+async function translatePrompts(linkElement) {
+    const promptContainer = linkElement.closest('.prompt-container');
+    const promptItems = promptContainer.querySelectorAll('.prompt-item');
+    const originalLink = linkElement.textContent;
+    
     try {
-        // 遍历工作流中的所有节点
-        for (const node of workflow.nodes) {
-            if (node.type === "CLIPTextEncode" 
-                && node.outputs 
-                && node.outputs[0]
-                && node.outputs[0].links
-                && node.outputs[0].links.length > 0) {
-                prompts.push(node.widgets_values[0]);
+        linkElement.textContent = translations['translating'] || '翻译中...';
+        linkElement.style.pointerEvents = 'none';
+        
+        for (const promptItem of promptItems) {
+            const originalText = promptItem.textContent;
+            // 将文本分成不超过 500 字符的段落
+            const segments = splitTextIntoSegments(originalText, 450);  // 留一些余量
+            let translatedSegments = [];
+            
+            // 翻译每个段落
+            for (const segment of segments) {
+                const response = await fetch('https://api.mymemory.translated.net/get?' + new URLSearchParams({
+                    q: segment,
+                    langpair: 'en|zh'
+                }));
+                
+                const data = await response.json();
+                if (data.responseStatus === 200) {
+                    translatedSegments.push(data.responseData.translatedText);
+                }
             }
+            
+            // 合并翻译结果
+            const translatedText = translatedSegments.join(' ');
+            promptItem.innerHTML = `
+                <p class="prompt-item">${translatedText}</p>
+                <p class="prompt-item">${originalText}</p>
+            `;
         }
     } catch (error) {
-        console.error('提取提示词时出错:', error);
+        console.error('Translation error:', error);
+        showToast(translations['translate_error'], 'error');
+    } finally {
+        linkElement.textContent = originalLink;
+        linkElement.style.pointerEvents = 'auto';
     }
-    return prompts;
+}
+
+function splitTextIntoSegments(text, maxLength) {
+    const segments = [];
+    let currentSegment = '';
+    
+    // 按句子分割文本
+    const sentences = text.match(/[^.!?]+[.!?]+/g) || [text];
+    
+    for (const sentence of sentences) {
+        if (currentSegment.length + sentence.length <= maxLength) {
+            currentSegment += sentence;
+        } else {
+            if (currentSegment) {
+                segments.push(currentSegment.trim());
+            }
+            currentSegment = sentence;
+        }
+    }
+    
+    if (currentSegment) {
+        segments.push(currentSegment.trim());
+    }
+    
+    return segments;
 }
 
 function setupCalendarButton() {
@@ -924,3 +993,22 @@ function getSubDirectoryName(path) {
     }
     return '';
 }
+
+// 添加复制提示词按钮的事件监听器
+document.getElementById('copyPrompts').addEventListener('click', function(event) {
+    event.stopPropagation();
+    
+    const modalInfo = document.getElementById('modal-info');
+    const promptsData = modalInfo.dataset.prompts;
+    
+    if (promptsData) {
+        const prompts = JSON.parse(promptsData);
+        const promptsText = prompts.join('\n\n');
+        navigator.clipboard.writeText(promptsText).then(function() {
+            showToast(translations['prompts_copied'], 'success');
+        }, function(err) {
+            console.error('无法复制提示词:', err);
+            showToast(translations['copy_failed'], 'error');
+        });
+    }
+});
