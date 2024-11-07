@@ -11,6 +11,16 @@
 <body>
     <header class="app-header">
         <h1><i class="fas fa-photo-video"></i>ComfyUI Moments</h1>
+        <div class="menu-container">
+            <a href="{{ url_for('index') }}" class="menu-item {{ 'active' if request.endpoint == 'index' }}">
+                <i class="fas fa-images"></i>
+                <span>{{ translations['images'] }}</span>
+            </a>
+            <a href="{{ url_for('prompts') }}" class="menu-item {{ 'active' if request.endpoint == 'prompts' }}">
+                <i class="fas fa-magic"></i>
+                <span>{{ translations['prompts'] }}</span>
+            </a>
+        </div>
         <nav>
             <div class="calendar-wrapper">
                 <button id="calendarButton" aria-label="{{ translations['calendar'] }}"><i class="fas fa-calendar-alt"></i></button>

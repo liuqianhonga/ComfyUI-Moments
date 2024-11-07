@@ -46,7 +46,10 @@ translations = {
         'copy_failed': 'Failed to copy workflow',
         'error': 'Error',
         'error_fetching_info': 'Error fetching image information',
-        'workflow_not_found': 'Workflow not found'
+        'workflow_not_found': 'Workflow not found',
+        'images': 'Images',
+        'prompts': 'Prompts',
+        'under_construction': 'Page Under Construction',
     },
     'zh': {
         'delete_confirm': '您确定要删除这张图片吗？',
@@ -95,6 +98,9 @@ translations = {
         'copy_failed': '复制工作流失败',
         'error': '错误',
         'error_fetching_info': '获取图片信息时出错',
-        'workflow_not_found': '暂未找到工作流'
+        'workflow_not_found': '暂未找到工作流',
+        'images': '图片',
+        'prompts': '提示词',
+        'under_construction': '页面建设中',
     }
 }
