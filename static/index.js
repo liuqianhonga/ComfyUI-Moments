@@ -99,7 +99,7 @@ function renderImages() {
                         <img data-src="${image.path}" alt="${image.path}" onclick="openModal('${image.path}')">
                     </div>
                     <div class="image-info">
-                        <span>${new Date(image.creation_time * 1000).toLocaleTimeString()}</span>
+                        <span>${new Date(image.creation_time * 1000).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})}</span>
                         <div class="image-info-buttons">
                             <div class="folder-info" onclick="openFileLocation('${image.path}')">
                                 <div class="folder-icon">
