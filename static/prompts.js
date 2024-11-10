@@ -53,7 +53,7 @@ function renderPrompts(data) {
         const promptTextDiv = document.createElement('div');
         promptTextDiv.className = 'prompt-text';
         promptTextDiv.innerHTML = `
-            ${promptText}
+            <div class="prompt-text-content">${promptText}</div>
             <a href="javascript:void(0)" class="translate-link" onclick="translatePrompt(this)">
                 ${translations.translate || '翻译'}
             </a>
@@ -85,33 +85,46 @@ function renderPrompts(data) {
 }
 
 async function translatePrompt(linkElement) {
-    const promptTextDiv = linkElement.parentElement;
-    const originalText = promptTextDiv.childNodes[0].textContent.trim();
+    const promptTextDiv = linkElement.closest('.prompt-text');
+    const originalText = promptTextDiv.querySelector('.prompt-text-content').textContent.trim();
     const originalLink = linkElement.textContent;
     
     try {
         linkElement.textContent = translations.translating || '翻译中...';
         linkElement.style.pointerEvents = 'none';
         
-        const response = await fetch('https://api.mymemory.translated.net/get?' + new URLSearchParams({
-            q: originalText,
-            langpair: 'en|zh'
-        }));
+        // 将长文本分段，每段不超过 450 字符
+        const segments = splitTextIntoSegments(originalText, 450);
+        let translatedSegments = [];
         
-        const data = await response.json();
-        if (data.responseStatus === 200) {
-            const translatedDiv = document.createElement('div');
-            translatedDiv.className = 'translated-text';
-            translatedDiv.textContent = data.responseData.translatedText;
+        // 翻译每个段落
+        for (const segment of segments) {
+            const response = await fetch('https://api.mymemory.translated.net/get?' + new URLSearchParams({
+                q: segment,
+                langpair: 'en|zh'
+            }).toString());
             
-            // 如果已经有翻译，则替换它
-            const existingTranslation = promptTextDiv.querySelector('.translated-text');
-            if (existingTranslation) {
-                promptTextDiv.replaceChild(translatedDiv, existingTranslation);
+            const data = await response.json();
+            if (data.responseStatus === 200 && data.responseData) {
+                translatedSegments.push(data.responseData.translatedText);
             } else {
-                promptTextDiv.appendChild(translatedDiv);
+                throw new Error(data.responseDetails || 'Translation failed');
             }
+            
+            // 添加延迟以避免 API 限制
+            await new Promise(resolve => setTimeout(resolve, 100));
         }
+        
+        // 合并翻译结果
+        const translatedText = translatedSegments.join(' ');
+        
+        // 更新提示词显示
+        const promptTextContent = promptTextDiv.querySelector('.prompt-text-content');
+        promptTextContent.innerHTML = `
+            <div class="original-text">${originalText}</div>
+            <div class="translated-text">${translatedText}</div>
+        `;
+        
     } catch (error) {
         console.error('Translation error:', error);
         showToast(translations.translate_error, 'error');
@@ -119,6 +132,32 @@ async function translatePrompt(linkElement) {
         linkElement.textContent = originalLink;
         linkElement.style.pointerEvents = 'auto';
     }
+}
+
+// 添加文本分段函数
+function splitTextIntoSegments(text, maxLength) {
+    const segments = [];
+    let currentSegment = '';
+    
+    // 按句子分割文本
+    const sentences = text.match(/[^.!?]+[.!?]+/g) || [text];
+    
+    for (const sentence of sentences) {
+        if (currentSegment.length + sentence.length <= maxLength) {
+            currentSegment += sentence;
+        } else {
+            if (currentSegment) {
+                segments.push(currentSegment.trim());
+            }
+            currentSegment = sentence;
+        }
+    }
+    
+    if (currentSegment) {
+        segments.push(currentSegment.trim());
+    }
+    
+    return segments;
 }
 
 function setupRefreshButton() {
