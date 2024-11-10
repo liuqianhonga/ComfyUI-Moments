@@ -21,7 +21,7 @@
     position: relative;
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-start;
     gap: 20px;
 }
 
@@ -102,10 +102,10 @@
 
 .translated-text {
     color: #666;
-    margin-top: 10px;
+    font-size: 0.95em;
     padding-top: 10px;
+    margin-top: 10px;
     border-top: 1px solid rgba(0, 0, 0, 0.1);
-    font-size: 14px;
 }
 
 /* 响应式布局 */
@@ -145,20 +145,36 @@
     background-color: #333;
 }
 
-/* 添加提示词文本容器 */
+/* 修改提示词文本和操作按钮的布局 */
 .prompt-text-content {
     flex-grow: 1;
     overflow: hidden;
     word-break: break-word;
 }
 
-.original-text {
-    margin-bottom: 10px;
+.prompt-actions {
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
 }
 
-.translated-text {
-    color: #666;
-    font-size: 0.95em;
-    padding-top: 10px;
-    border-top: 1px solid rgba(0, 0, 0, 0.1);
-} 
+.action-link {
+    color: #1877f2;
+    font-size: 14px;
+    text-decoration: none;
+    cursor: pointer;
+    padding: 4px 8px;
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.action-link:hover {
+    text-decoration: underline;
+}
+
+.action-link i {
+    font-size: 14px;
+}
