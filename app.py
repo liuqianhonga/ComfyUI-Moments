@@ -33,7 +33,7 @@ config_parser = configparser.ConfigParser()
 CONFIG_FILE = 'config.ini'
 EXAMPLE_CONFIG_FILE = 'config.ini.example'
 
-# 全局变���
+# 全局变量
 IMAGES_DIRS = []
 ALLOW_DELETE_IMAGE = False
 SCAN_SUBDIRECTORIES = True
@@ -278,7 +278,7 @@ def open_file_location():
 def open_browser(host, port):
     webbrowser.open(f'http://{host}:{port}')
 
-# 移除 @app.before_first_request 装饰器
+# 移除 @app.before_first_request
 def start_browser():
     Thread(target=open_browser).start()
 
@@ -312,7 +312,22 @@ def get_prompts():
             "error": "No prompts cache found. Please run extract_prompts.py first."
         }), 404
     
-    return jsonify(prompts_data)
+    # 将有序字典转换为数组
+    prompts_array = [
+        {
+            'hash': prompt_hash,
+            'text': prompts_data['prompt_text'][prompt_hash],
+            'images': images
+        }
+        for prompt_hash, images in prompts_data['prompt_map'].items()
+    ]
+    
+    response_data = {
+        'prompts': prompts_array,
+        'stats': prompts_data['stats']
+    }
+    
+    return jsonify(response_data)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='ComfyUI Moments Server')
