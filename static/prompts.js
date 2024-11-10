@@ -40,12 +40,8 @@ function renderPrompts(data) {
     const container = document.getElementById('prompts-container');
     container.innerHTML = '';
 
-    const promptHashes = Object.keys(data.prompt_map);
-
-    promptHashes.forEach(hash => {
-        const promptText = data.prompt_text[hash];
-        const images = data.prompt_map[hash];
-        
+    // 使用数组形式的提示词数据
+    data.prompts.forEach(prompt => {
         const promptGroup = document.createElement('div');
         promptGroup.className = 'prompt-group';
         
@@ -53,7 +49,9 @@ function renderPrompts(data) {
         const promptTextDiv = document.createElement('div');
         promptTextDiv.className = 'prompt-text';
         promptTextDiv.innerHTML = `
-            <div class="prompt-text-content">${promptText}</div>
+            <div class="prompt-text-content">
+                <div class="original-text">${prompt.text}</div>
+            </div>
             <a href="javascript:void(0)" class="translate-link" onclick="translatePrompt(this)">
                 ${translations.translate || '翻译'}
             </a>
@@ -63,13 +61,14 @@ function renderPrompts(data) {
         const imagesDiv = document.createElement('div');
         imagesDiv.className = 'prompt-images';
         
-        images.forEach(imagePath => {
+        // 使用提示词的图片数组
+        prompt.images.forEach(imagePath => {
             const imageContainer = document.createElement('div');
             imageContainer.className = 'image-container';
             imageContainer.innerHTML = `
                 <div class="image-wrapper">
                     <div class="image-placeholder"></div>
-                    <img data-src="${imagePath}" alt="${promptText}" onclick="openModal('${imagePath}')">
+                    <img data-src="${imagePath}" alt="${prompt.text}" onclick="openModal('${imagePath}')">
                 </div>
             `;
             imagesDiv.appendChild(imageContainer);
@@ -80,7 +79,7 @@ function renderPrompts(data) {
         container.appendChild(promptGroup);
     });
 
-    // 重新设置懒加载
+    // 设置懒加载
     setupLazyLoading();
 }
 

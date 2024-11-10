@@ -3,7 +3,7 @@ import json
 import hashlib
 import pickle
 from PIL import Image
-from collections import defaultdict
+from collections import defaultdict, OrderedDict
 from datetime import datetime
 
 PROMPTS_CACHE_FILE = 'prompts_cache.pkl'
@@ -120,35 +120,30 @@ def scan_images_for_prompts(image_dirs, file_types):
         else:
             failed_count += 1
 
-    print("\n提示词最新时间:")
-    for prompt_hash, latest_time in prompt_latest_time.items():
-        print(f"提示词: {prompt_text[prompt_hash][:30]}...")
-        print(f"最新时间: {datetime.fromtimestamp(latest_time)}")
-        print(f"图片数量: {len(prompt_map[prompt_hash])}")
-        print("---")
-
     # 对提示词进行排序
     sorted_hashes = sorted(
         prompt_latest_time.keys(),
-        key=lambda x: (prompt_latest_time[x], len(prompt_map[x])),  # 首先按时间排序，时间相同的按图片数量排序
+        key=lambda x: prompt_latest_time[x],
         reverse=True
     )
 
     # 创建最终的排序结果
-    sorted_prompts = {}
+    sorted_prompts = OrderedDict()  # 使用 OrderedDict 保持排序
     for prompt_hash in sorted_hashes:
         # 确保每个提示词的图片也是按时间倒序排序的
         images = prompt_map[prompt_hash]
         sorted_images = [img['path'] for img in sorted(images, key=lambda x: x['time'], reverse=True)]
         sorted_prompts[prompt_hash] = sorted_images
 
-    print("\n排序后的提示词顺序:")
-    for prompt_hash in sorted_prompts:
-        print(f"提示词: {prompt_text[prompt_hash][:30]}...")
-        print(f"时间: {datetime.fromtimestamp(prompt_latest_time[prompt_hash])}")
-        print("---")
-
     print(f"\n处理完成: 成功 {processed_count} 个文件, 失败 {failed_count} 个文件, 空提示词 {empty_count} 个文件")
+    
+    # 打印排序后的提示词和时间，用于调试
+    print("\n提示词排序结果:")
+    for prompt_hash in sorted_prompts:
+        print(f"提示词: {prompt_text[prompt_hash][:50]}...")
+        print(f"最新时间: {datetime.fromtimestamp(prompt_latest_time[prompt_hash])}")
+        print("---")
+    
     return {
         'prompt_map': sorted_prompts,
         'prompt_text': prompt_text,
