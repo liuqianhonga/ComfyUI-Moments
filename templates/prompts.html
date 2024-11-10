@@ -12,9 +12,18 @@
 
 {% block content %}
 <div id="app">
-    <div class="under-construction">
-        <i class="fas fa-tools"></i>
-        <h2>{{ translations['under_construction'] }}</h2>
+    <div id="prompts-container">
+        <!-- 提示词和图片将通过 JavaScript 动态加载 -->
     </div>
 </div>
+
+<button id="backToTop" title="{{ translations['back_to_top'] }}"></button>
+    <i class="fas fa-arrow-up"></i>
+</button>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script src="{{ url_for('static', filename='common.js') }}"></script>
+<script src="{{ url_for('static', filename='prompts.js') }}"></script>
 {% endblock %} 
