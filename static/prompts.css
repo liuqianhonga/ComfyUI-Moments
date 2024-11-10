@@ -19,17 +19,19 @@
     background-color: #f0f2f5;
     border-bottom: 1px solid #e4e6eb;
     position: relative;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
 }
 
 .prompt-text .translate-link {
-    position: absolute;
-    right: 20px;
-    top: 50%;
-    transform: translateY(-50%);
+    flex-shrink: 0;
     color: #1877f2;
     font-size: 14px;
     text-decoration: none;
     cursor: pointer;
+    padding: 5px 10px;
 }
 
 .prompt-text .translate-link:hover {
@@ -141,4 +143,22 @@
 
 #backToTop:hover {
     background-color: #333;
+}
+
+/* 添加提示词文本容器 */
+.prompt-text-content {
+    flex-grow: 1;
+    overflow: hidden;
+    word-break: break-word;
+}
+
+.original-text {
+    margin-bottom: 10px;
+}
+
+.translated-text {
+    color: #666;
+    font-size: 0.95em;
+    padding-top: 10px;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
 } 
