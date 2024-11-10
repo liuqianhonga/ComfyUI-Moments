@@ -52,9 +52,14 @@ function renderPrompts(data) {
             <div class="prompt-text-content">
                 <div class="original-text">${prompt.text}</div>
             </div>
-            <a href="javascript:void(0)" class="translate-link" onclick="translatePrompt(this)">
-                ${translations.translate || '翻译'}
-            </a>
+            <div class="prompt-actions">
+                <a href="javascript:void(0)" class="action-link" onclick="translatePrompt(this)">
+                    <i class="fas fa-language"></i> ${translations.translate || '翻译'}
+                </a>
+                <a href="javascript:void(0)" class="action-link" onclick="copyPrompt(this)">
+                    <i class="fas fa-copy"></i> ${translations.copy || '复制'}
+                </a>
+            </div>
         `;
         
         // 创建图片网格
@@ -85,11 +90,11 @@ function renderPrompts(data) {
 
 async function translatePrompt(linkElement) {
     const promptTextDiv = linkElement.closest('.prompt-text');
-    const originalText = promptTextDiv.querySelector('.prompt-text-content').textContent.trim();
-    const originalLink = linkElement.textContent;
+    const originalText = promptTextDiv.querySelector('.original-text').textContent.trim();
+    const originalLink = linkElement.innerHTML;
     
     try {
-        linkElement.textContent = translations.translating || '翻译中...';
+        linkElement.innerHTML = `<i class="fas fa-language"></i> ${translations.translating || '翻译中...'}`;
         linkElement.style.pointerEvents = 'none';
         
         // 将长文本分段，每段不超过 450 字符
@@ -128,7 +133,7 @@ async function translatePrompt(linkElement) {
         console.error('Translation error:', error);
         showToast(translations.translate_error, 'error');
     } finally {
-        linkElement.textContent = originalLink;
+        linkElement.innerHTML = originalLink;
         linkElement.style.pointerEvents = 'auto';
     }
 }
@@ -235,5 +240,26 @@ function setupBackToTop() {
             document.body.scrollTop = 0;
             document.documentElement.scrollTop = 0;
         };
+    }
+}
+
+// 添加复制提示词功能
+async function copyPrompt(linkElement) {
+    const promptTextDiv = linkElement.closest('.prompt-text');
+    const originalText = promptTextDiv.querySelector('.original-text').textContent.trim();
+    const originalLink = linkElement.innerHTML;
+    
+    try {
+        linkElement.innerHTML = `<i class="fas fa-copy"></i> ${translations.copying || '复制中...'}`;
+        linkElement.style.pointerEvents = 'none';
+        
+        await navigator.clipboard.writeText(originalText);
+        showToast(translations.prompt_copied || '提示词已复制', 'success');
+    } catch (error) {
+        console.error('Copy error:', error);
+        showToast(translations.copy_failed || '复制失败', 'error');
+    } finally {
+        linkElement.innerHTML = originalLink;
+        linkElement.style.pointerEvents = 'auto';
     }
 } 
