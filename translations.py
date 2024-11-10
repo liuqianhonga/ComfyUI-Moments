@@ -56,6 +56,8 @@ translations = {
         'translate': 'Translate',
         'translating': 'Translating...',
         'translate_error': 'Translation failed',
+        'cache_outdated': 'Cache is outdated. Please run extract_prompts.py to update.',
+        'no_cache': 'No prompts cache found. Please run extract_prompts.py first.',
     },
     'zh': {
         'delete_confirm': '您确定要删除这张图片吗？',
@@ -114,5 +116,7 @@ translations = {
         'translate': '翻译',
         'translating': '翻译中...',
         'translate_error': '翻译失败',
+        'cache_outdated': '缓存已过期，请运行 extract_prompts.py 更新缓存',
+        'no_cache': '未找到提示词缓存，请先运行 extract_prompts.py',
     }
 }

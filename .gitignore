@@ -1,3 +1,4 @@
 __pycache__
 image_cache.pkl
+prompts_cache.pkl
 config.ini

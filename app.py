@@ -20,6 +20,7 @@ import subprocess
 from functools import lru_cache
 import logging
 import platform
+from prompt_utils import get_all_prompts
 
 app = Flask(__name__)
 babel = Babel(app)
@@ -32,7 +33,7 @@ config_parser = configparser.ConfigParser()
 CONFIG_FILE = 'config.ini'
 EXAMPLE_CONFIG_FILE = 'config.ini.example'
 
-# 全局变量
+# 全局变���
 IMAGES_DIRS = []
 ALLOW_DELETE_IMAGE = False
 SCAN_SUBDIRECTORIES = True
@@ -289,6 +290,29 @@ def prompts():
     return render_template('prompts.html', 
                          allow_delete_image=ALLOW_DELETE_IMAGE,
                          translations=translations[locale])
+
+@app.route('/api/prompts')
+def get_prompts():
+    if not load_config():
+        return jsonify({"error": "Configuration not found"}), 404
+    
+    from cache_utils import get_last_modified_times
+    from prompt_utils import load_prompts_cache, check_prompts_cache_valid
+    
+    # 检查缓存是否有效
+    if not check_prompts_cache_valid(IMAGES_DIRS, get_last_modified_times()):
+        return jsonify({
+            "error": "Cache is outdated. Please run extract_prompts.py to update the cache."
+        }), 409
+    
+    # 直接从缓存文件读取
+    prompts_data = load_prompts_cache()
+    if not prompts_data:
+        return jsonify({
+            "error": "No prompts cache found. Please run extract_prompts.py first."
+        }), 404
+    
+    return jsonify(prompts_data)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='ComfyUI Moments Server')
