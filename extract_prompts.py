@@ -1,7 +1,7 @@
 import os
 import configparser
-from prompt_utils import scan_images_for_prompts
-from cache_utils import get_last_modified_times, set_last_modified_times, set_last_config_mtime
+from prompt_utils import scan_images_for_prompts, save_prompts_cache
+from cache_utils import get_last_modified_times, set_last_modified_times
 
 def load_config():
     config_parser = configparser.ConfigParser()
@@ -30,6 +30,9 @@ def main():
     
     prompts_data = scan_images_for_prompts(IMAGES_DIRS, FILE_TYPES)
     
+    # 保存缓存
+    save_prompts_cache(prompts_data)
+    
     # 更新最后修改时间
     last_modified_times = {}
     for dir in IMAGES_DIRS:
@@ -42,6 +45,12 @@ def main():
     print(f"- 处理失败: {prompts_data['stats']['failed']} 个文件")
     print(f"- 空提示词: {prompts_data['stats']['empty']} 个文件")
     print(f"- 不同提示词数量: {len(prompts_data['prompt_text'])} 个")
+    
+    # 检查缓存文件是否生成
+    if os.path.exists('prompts_cache.pkl'):
+        print("缓存文件已生成: prompts_cache.pkl")
+    else:
+        print("错误：缓存文件未生成")
 
 if __name__ == '__main__':
     main() 
