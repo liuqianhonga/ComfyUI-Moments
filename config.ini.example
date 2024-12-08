@@ -2,6 +2,7 @@
 images_dirs = E:\AI\ComfyUI\output
 allow_delete_image = True
 allow_open_directory = True
+allow_install_page = True
 
 [advanced]
 scan_subdirectories = True
