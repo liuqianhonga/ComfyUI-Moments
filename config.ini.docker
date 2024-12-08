@@ -1,0 +1,8 @@
+[settings]
+images_dirs = /app/images
+allow_delete_image = False
+
+[advanced]
+scan_subdirectories = True
+file_types = .png,.jpg,.jpeg,.gif,.webp
+exclude_dirs = thumbnails,temp
