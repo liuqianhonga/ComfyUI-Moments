@@ -19,6 +19,7 @@
 - 支持将图片移动到系统回收站
 - 响应式设计，适配桌面和移动设备
 - 简洁直观的用户界面
+- 支持 Docker 部署，查看[Docker部署指南](DOCKER_DEPLOY.md)
 
 ## 安装
 
@@ -44,6 +45,8 @@ pip install -r requirements.txt
 2. 在安装页面中，您可以进行以下配置：
    - 设置图片目录路径
    - 选择是否允许删除图片
+   - 选择是否允许打开图片目录
+   - 选择是否允许访问安装页面
    - 选择是否扫描子目录
    - 设置要扫描的文件类型
    - 设置要排除的目录
@@ -57,20 +60,33 @@ pip install -r requirements.txt
 2. 打开 `config.ini` 文件。
 3. 在 `images_dirs` 设置中，指定您的 ComfyUI 输出目录路径，多个目录用英文逗号隔开。
 4. 设置 `allow_delete_image` 为 `True` 或 `False` 来启用或禁用删除图片功能。
-5. `scan_subdirectories`：是否扫描子目录。为 `True` 或 `False` 来启用或禁用。
-6. `file_types`：指定要扫描的文件类型。如：.png,.jpg,.jpeg,.gif,.webp
-7. `exclude_dirs`：指定要排除的目录名。如：thumbnails,temp
+5. 设置 `allow_open_directory` 为 `True` 或 `False` 来启用或禁用打开图片目录功能。
+6. 设置 `allow_install_page` 为 `True` 或 `False` 来启用或禁用安装页面访问功能。
+7. `scan_subdirectories`：是否扫描子目录。为 `True` 或 `False` 来启用或禁用。
+8. `file_types`：指定要扫描的文件类型。如：.png,.jpg,.jpeg,.gif,.webp
+9. `exclude_dirs`：指定要排除的目录名。如：thumbnails,temp
 
 ```ini
 [settings]
 images_dirs = E:\AI\ComfyUI\output
 allow_delete_image = True
+allow_open_directory = True
+allow_install_page = True
 
 [advanced]
 scan_subdirectories = True
 file_types = .png,.jpg,.jpeg,.gif,.webp
 exclude_dirs = thumbnails,temp
 ```
+
+### Docker 配置
+
+在 Docker 环境中，为了增强安全性，默认会禁用以下功能：
+- 删除图片功能 (`allow_delete_image = False`)
+- 打开图片目录功能 (`allow_open_directory = False`)
+- 安装页面访问功能 (`allow_install_page = False`)
+
+您可以根据需要在 `config.ini.docker` 中修改这些设置。
 
 ## 运行应用
 
