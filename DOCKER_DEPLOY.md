@@ -35,13 +35,15 @@ cd ComfyUI-Moments
 1. `config.ini.docker` 中的主要设置：
    ```ini
    [settings]
-   images_dirs = /app/images      # 容器内的图片目录路径
-   allow_delete_image = True      # 是否允许删除图片
+   images_dirs = /app/images
+   allow_delete_image = False
+   allow_open_directory = False
+   allow_install_page = False
 
    [advanced]
-   scan_subdirectories = True     # 是否扫描子目录
-   file_types = .png,.jpg,.jpeg,.gif,.webp  # 支持的图片格式
-   exclude_dirs = thumbnails,temp # 排除的目录
+   scan_subdirectories = True
+   file_types = .png,.jpg,.jpeg,.gif,.webp
+   exclude_dirs = thumbnails,temp
    ```
 
 ### 3. 构建和启动容器
@@ -97,6 +99,30 @@ sudo docker-compose exec comfyui-moments ls -l /app/images
 1. 等待几秒钟让服务完全启动
 2. 访问 http://localhost:7860 
 3. 首次访问时会自动进入配置页面，配置已经预设好，直接点击"完成安装"即可
+
+## 更新和重新构建
+
+当代码更新后，需要重新构建 Docker 镜像。请按以下步骤操作：
+
+1. 停止并删除现有容器：
+```bash
+docker-compose down
+```
+
+2. 删除旧的镜像：
+```bash
+docker rmi comfyui-moments
+```
+
+3. 重新构建镜像：
+```bash
+docker-compose build --no-cache
+```
+
+4. 启动新容器：
+```bash
+docker-compose up -d
+```
 
 ## 常用操作命令
 
