@@ -54,6 +54,7 @@
 <script>
     /* eslint-disable */
     var allowDeleteImage = {{ 'true' if allow_delete_image else 'false' }};
+    var allowOpenDirectory = {{ 'true' if allow_open_directory else 'false' }};
     /* eslint-enable */
 </script>
 <script src="{{ url_for('static', filename='index.js') }}"></script>

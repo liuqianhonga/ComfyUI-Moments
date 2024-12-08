@@ -140,23 +140,57 @@
 .folder-info {
     display: flex;
     align-items: center;
-    gap: 5px;
+    gap: 4px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    background-color: #f3f4f6;
+    color: #666;
+}
+
+.folder-info.hoverable {
+    transition: all 0.2s ease;
+}
+
+.folder-info.clickable {
     cursor: pointer;
 }
 
+.folder-info.clickable:hover {
+    background-color: #e5e7eb;
+    color: #e53e3e;
+}
+
+.folder-info:not(.clickable), 
+.folder-info:not(.clickable) > .folder-icon {
+    cursor: default;
+}
+
+.folder-info:not(.clickable):hover {
+    background-color: transparent;
+    color: #666;
+}
+
+.folder-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.7;
+}
+
+.folder-info:hover .folder-icon {
+    opacity: 1;
+}
+
+.folder-info:not(.clickable):hover .folder-icon {
+    opacity: 0.7;
+}
+
 .subdirectory-name {
-    font-size: 12px;
-    color: #65676b;
-    max-width: 80px;
+    font-size: 0.8rem;
+    max-width: 100px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    transition: color 0.2s ease;
-}
-
-.folder-info:hover .folder-icon i,
-.folder-info:hover .subdirectory-name {
-    color: #e53e3e;
 }
 
 /* 模态框样式 */
@@ -482,4 +516,3 @@
     padding-top: 4px;
     margin-top: 4px;
 }
-

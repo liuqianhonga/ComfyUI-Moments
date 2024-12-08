@@ -93,6 +93,7 @@ function renderImages() {
                 const image = images[i];
                 // 获取二级目录名称
                 const subDirName = getSubDirectoryName(image.path);
+                
                 container.innerHTML = `
                     <div class="image-wrapper">
                         <div class="image-placeholder"></div>
@@ -101,7 +102,7 @@ function renderImages() {
                     <div class="image-info">
                         <span>${new Date(image.creation_time * 1000).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})}</span>
                         <div class="image-info-buttons">
-                            <div class="folder-info" onclick="openFileLocation('${image.path}')">
+                            <div class="folder-info hoverable${allowOpenDirectory ? ' clickable' : ''}" ${allowOpenDirectory ? `onclick="openFileLocation('${image.path}')"` : ''}>
                                 <div class="folder-icon">
                                     <i class="fas fa-folder-open"></i>
                                 </div>
@@ -921,6 +922,8 @@ window.onload = function() {
 };
 
 function openFileLocation(imagePath) {
+    if (!allowOpenDirectory) return;
+    
     if (imagePath) {
         fetch('/api/open_file_location', {
             method: 'POST',
