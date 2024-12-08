@@ -1,0 +1,23 @@
+version: '3'
+
+services:
+  comfyui-moments:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "7860:7860"  # Default Flask port
+    volumes:
+      - ./static:/app/static  # For static files
+      - ./templates:/app/templates  # For template files
+      - ./config.ini.docker:/app/config.ini  # Docker-specific configuration file
+      - ${IMAGES_DIR:-./images}:/app/images  # Images directory mapping with default value
+      # Optional cache files - will be created if they don't exist
+      - cache_data:/app  # Volume for cache files
+    environment:
+      - FLASK_ENV=production
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
+
+volumes:
+  cache_data:  # Named volume for cache files
