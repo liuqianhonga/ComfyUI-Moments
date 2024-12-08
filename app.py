@@ -37,17 +37,19 @@ EXAMPLE_CONFIG_FILE = 'config.ini.example'
 IMAGES_DIRS = []
 ALLOW_DELETE_IMAGE = False
 ALLOW_OPEN_DIRECTORY = False
+ALLOW_INSTALL_PAGE = True
 SCAN_SUBDIRECTORIES = True
 FILE_TYPES = ()
 EXCLUDE_DIRS = set()
 
 def load_config():
-    global IMAGES_DIRS, ALLOW_DELETE_IMAGE, ALLOW_OPEN_DIRECTORY, SCAN_SUBDIRECTORIES, FILE_TYPES, EXCLUDE_DIRS
+    global IMAGES_DIRS, ALLOW_DELETE_IMAGE, ALLOW_OPEN_DIRECTORY, ALLOW_INSTALL_PAGE, SCAN_SUBDIRECTORIES, FILE_TYPES, EXCLUDE_DIRS
     if os.path.exists(CONFIG_FILE):
         config_parser.read(CONFIG_FILE)
         IMAGES_DIRS = [dir.strip() for dir in config_parser.get('settings', 'images_dirs', fallback='').split(',') if dir.strip()]
         ALLOW_DELETE_IMAGE = config_parser.getboolean('settings', 'allow_delete_image', fallback=False)
         ALLOW_OPEN_DIRECTORY = config_parser.getboolean('settings', 'allow_open_directory', fallback=True)
+        ALLOW_INSTALL_PAGE = config_parser.getboolean('settings', 'allow_install_page', fallback=True)
         SCAN_SUBDIRECTORIES = config_parser.getboolean('advanced', 'scan_subdirectories', fallback=True)
         FILE_TYPES = tuple(ext.strip().lower() for ext in config_parser.get('advanced', 'file_types', fallback='.png,.jpg,.jpeg,.gif,.webp').split(','))
         EXCLUDE_DIRS = set(dir.strip() for dir in config_parser.get('advanced', 'exclude_dirs', fallback='thumbnails,temp').split(','))
@@ -80,11 +82,15 @@ def index():
 
 @app.route('/install', methods=['GET', 'POST'])
 def install():
+    if not ALLOW_INSTALL_PAGE:
+        abort(403, description="Install page is disabled")
+        
     if request.method == 'POST':
         config_parser['settings'] = {
             'images_dirs': request.form.get('images_dirs', ''),
             'allow_delete_image': 'True' if request.form.get('allow_delete_image') == 'on' else 'False',
-            'allow_open_directory': 'True' if request.form.get('allow_open_directory') == 'on' else 'False'
+            'allow_open_directory': 'True' if request.form.get('allow_open_directory') == 'on' else 'False',
+            'allow_install_page': 'True' if request.form.get('allow_install_page') == 'on' else 'False'
         }
         
         config_parser['advanced'] = {

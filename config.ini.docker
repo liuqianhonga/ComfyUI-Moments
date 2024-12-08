@@ -2,6 +2,7 @@
 images_dirs = /app/images
 allow_delete_image = False
 allow_open_directory = False
+allow_install_page = False
 
 [advanced]
 scan_subdirectories = True
