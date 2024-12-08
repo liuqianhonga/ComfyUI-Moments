@@ -1,6 +1,7 @@
 [settings]
 images_dirs = E:\AI\ComfyUI\output
 allow_delete_image = True
+allow_open_directory = True
 
 [advanced]
 scan_subdirectories = True

@@ -36,16 +36,18 @@ EXAMPLE_CONFIG_FILE = 'config.ini.example'
 # 全局变量
 IMAGES_DIRS = []
 ALLOW_DELETE_IMAGE = False
+ALLOW_OPEN_DIRECTORY = False
 SCAN_SUBDIRECTORIES = True
 FILE_TYPES = ()
 EXCLUDE_DIRS = set()
 
 def load_config():
-    global IMAGES_DIRS, ALLOW_DELETE_IMAGE, SCAN_SUBDIRECTORIES, FILE_TYPES, EXCLUDE_DIRS
+    global IMAGES_DIRS, ALLOW_DELETE_IMAGE, ALLOW_OPEN_DIRECTORY, SCAN_SUBDIRECTORIES, FILE_TYPES, EXCLUDE_DIRS
     if os.path.exists(CONFIG_FILE):
         config_parser.read(CONFIG_FILE)
         IMAGES_DIRS = [dir.strip() for dir in config_parser.get('settings', 'images_dirs', fallback='').split(',') if dir.strip()]
         ALLOW_DELETE_IMAGE = config_parser.getboolean('settings', 'allow_delete_image', fallback=False)
+        ALLOW_OPEN_DIRECTORY = config_parser.getboolean('settings', 'allow_open_directory', fallback=True)
         SCAN_SUBDIRECTORIES = config_parser.getboolean('advanced', 'scan_subdirectories', fallback=True)
         FILE_TYPES = tuple(ext.strip().lower() for ext in config_parser.get('advanced', 'file_types', fallback='.png,.jpg,.jpeg,.gif,.webp').split(','))
         EXCLUDE_DIRS = set(dir.strip() for dir in config_parser.get('advanced', 'exclude_dirs', fallback='thumbnails,temp').split(','))
@@ -73,6 +75,7 @@ def index():
     locale = get_locale()
     return render_template('index.html', 
                            allow_delete_image=ALLOW_DELETE_IMAGE,
+                           allow_open_directory=ALLOW_OPEN_DIRECTORY,
                            translations=translations[locale])
 
 @app.route('/install', methods=['GET', 'POST'])
@@ -80,7 +83,8 @@ def install():
     if request.method == 'POST':
         config_parser['settings'] = {
             'images_dirs': request.form.get('images_dirs', ''),
-            'allow_delete_image': 'True' if request.form.get('allow_delete_image') == 'on' else 'False'
+            'allow_delete_image': 'True' if request.form.get('allow_delete_image') == 'on' else 'False',
+            'allow_open_directory': 'True' if request.form.get('allow_open_directory') == 'on' else 'False'
         }
         
         config_parser['advanced'] = {
@@ -226,6 +230,12 @@ def refresh_images():
 
 @app.route('/api/open_file_location', methods=['POST'])
 def open_file_location():
+    if not ALLOW_OPEN_DIRECTORY:
+        return jsonify({
+            'success': False, 
+            'message': 'Open directory is not allowed in current configuration.'
+        }), 403
+
     try:
         data = request.get_json()
         filename = data.get('filename')
@@ -289,6 +299,7 @@ def prompts():
     locale = get_locale()
     return render_template('prompts.html', 
                          allow_delete_image=ALLOW_DELETE_IMAGE,
+                         allow_open_directory=ALLOW_OPEN_DIRECTORY,
                          translations=translations[locale])
 
 @app.route('/api/prompts')
